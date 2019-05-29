@@ -84,7 +84,7 @@ def preprocess_subscribers(spark):
 
 def generate_features(spark):
     """Generate features."""
-    joined_df = preprocess_subscriber(spark)
+    joined_df = preprocess_subscribers(spark)
     for area_code in AREA_CODES:
         joined_df = joined_df.withColumn(
             "Area_Code_{}".format(area_code),
