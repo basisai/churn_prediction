@@ -16,8 +16,8 @@ RAW_NIGHT_CALL_TABLE = os.getenv("RAW_NIGHT_CALL_TABLE")
 BQ_TABLE = "{project}.{dataset}.{table}"
 
 
-def preprocess_subscribers(spark):
-    """Preprocess subscribers."""
+def preprocess_subscriber(spark):
+    """Preprocess subscriber data."""
     # Load subscribers
     subscriber_table = BQ_TABLE.format(
         project=RAW_BIGQUERY_PROJECT,
@@ -84,7 +84,7 @@ def preprocess_subscribers(spark):
 
 def generate_features(spark):
     """Generate features."""
-    joined_df = preprocess_subscribers(spark)
+    joined_df = preprocess_subscriber(spark)
     for area_code in AREA_CODES:
         joined_df = joined_df.withColumn(
             "Area_Code_{}".format(area_code),

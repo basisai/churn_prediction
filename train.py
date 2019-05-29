@@ -29,8 +29,8 @@ if __name__ == '__main__':
     # Split train and validation data
     TARGET_COL = "Churn"
     FEATURE_COLS = SUBSCRIBER_FEATURES + \
-                   [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
-                   [f"State_{state}" for state in STATES]
+        [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
+        [f"State_{state}" for state in STATES]
 
     X = model_data[FEATURE_COLS].values
     y = model_data[TARGET_COL].values
