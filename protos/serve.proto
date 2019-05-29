@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service Predictor {
+  rpc PredictProb (PredictRequest) returns (PredictResponse) {}
+}
+
+message PredictRequest {
+  string User_id = 1;
+}
+
+message PredictResponse {
+  float churn_prob = 1;
+}
