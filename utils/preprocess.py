@@ -2,7 +2,7 @@
 Script to preprocess subscribers.
 """
 import os
-from constants import AREA_CODES, STATES
+from .constants import AREA_CODES, STATES
 from pyspark.sql import functions as F
 
 RAW_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
