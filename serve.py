@@ -15,8 +15,8 @@ from bedrock_client.bedrock.feature_store import get_feature_store
 from concurrent.futures import ThreadPoolExecutor
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-SUBSCRIBER_FS = os.getenv("SUBSCRIBER_FS")
-OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
+SUBSCRIBER_FS = "subscribers"
+OUTPUT_MODEL_NAME = "lgb_model.pkl"
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
