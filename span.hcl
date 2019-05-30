@@ -6,7 +6,7 @@ train {
     script = ["train.py"]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-staging"
+        RAW_BIGQUERY_PROJECT = "span-production"
         RAW_BIGQUERY_DATASET = "churn"
         RAW_SUBSCRIBER_TABLE = "subscribers"
         RAW_DAY_CALL_TABLE = "Day_calls"
@@ -47,7 +47,7 @@ features {
     script = ["fs_preprocess.py"]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-staging"
+        RAW_BIGQUERY_PROJECT = "span-production"
         RAW_BIGQUERY_DATASET = "churn"
         RAW_SUBSCRIBER_TABLE = "subscribers"
         RAW_DAY_CALL_TABLE = "Day_calls"
