@@ -26,7 +26,7 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
         self.feature_store = get_feature_store()
         with open(OUTPUT_MODEL_NAME, "rb") as model_file:
             self.model: lgb = pickle.load(model_file)
-        self.model._make_predict_function()
+        # self.model._make_predict_function()
 
     def predict_prob(self, User_id):
         """Predict churn probability of user with User_id.
