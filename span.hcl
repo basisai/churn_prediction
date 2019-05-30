@@ -87,7 +87,7 @@ features {
 }
 
 serve {
-    image = "python:3.7"
+    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.11"
     install = [
         "pip install -r requirements.txt && pip install google-cloud-storage grpcio-tools grpcio protobuf",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
