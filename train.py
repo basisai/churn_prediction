@@ -21,12 +21,12 @@ OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
 
 
 if __name__ == '__main__':
-    # Generate features
+    print("\tGenerate features")
     with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
         model_data = generate_features(spark).toPandas()
 
-    # Split train and validation data
+    print("\tSplit train and validation data")
     TARGET_COL = "Churn"
     FEATURE_COLS = SUBSCRIBER_FEATURES + \
         [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42)
 
-    # Train model
+    print("\tTrain model")
     gbm = lgb.LGBMClassifier(
         num_leaves=NUM_LEAVES,
         learning_rate=LR,
@@ -45,11 +45,11 @@ if __name__ == '__main__':
     )
     gbm.fit(X_train, y_train)
 
-    # Save the model
+    print("\tSave model")
     with open("/artefact/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
 
-    # Predict using validation data
+    print("\tPredict using validation data")
     y_prob = gbm.predict_proba(X_val)[:, 1]
     y_pred = (y_prob > 0.5).astype(int)
     acc = metrics.accuracy_score(y_val, y_pred)
