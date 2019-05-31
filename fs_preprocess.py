@@ -31,3 +31,7 @@ if __name__ == '__main__':
     print("\tWriting active subscribers into fs")
     fs.write_pandas_df(subscriber_pandasdf, SUBSCRIBER_FS, "User_id")
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
+
+    print("\tTest calling feature store")
+    User_id = "68b1fbe7f16e4ae3024973f12f3cb313"
+    print(fs.read(SUBSCRIBER_FS, [User_id])[User_id])
