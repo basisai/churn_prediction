@@ -80,7 +80,7 @@ features {
     
     feature_definition = [
         {
-          name = "subscribers_fs"
+          name = "subscriber_fs"
           key = "User_id"
           description = "Contains details of all active subscribers. User_id (str)"
         }
