@@ -54,6 +54,7 @@ features {
         RAW_EVE_CALL_TABLE = "Eve_calls"
         RAW_INTL_CALL_TABLE = "Intl_calls"
         RAW_NIGHT_CALL_TABLE = "Night_calls"
+        SUBSCRIBER_FS = "subscriber_fs"
     }
 
     spark {
