@@ -1,7 +1,7 @@
 version = "1.0"
 
 train {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.12"
+    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
     install = ["pip3 install -r requirements.txt"]
     script = ["train.py"]
 
@@ -23,7 +23,7 @@ train {
         // to be passed in as --conf key=value
         conf {
             spark.executor.instances = "2"
-            spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.12"
+            spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
             spark.kubernetes.pyspark.pythonVersion = "3"
             spark.driver.memory = "4g"
             spark.driver.cores = "2"
@@ -42,7 +42,7 @@ train {
 }
 
 features {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.12"
+    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
     install = ["pip3 install -r requirements.txt"]
     script = ["fs_preprocess.py"]
 
@@ -61,7 +61,7 @@ features {
         // to be passed in as --conf key=value
         conf {
             spark.executor.instances = "2"
-            spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.12"
+            spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
             spark.kubernetes.pyspark.pythonVersion = "3"
             spark.driver.memory = "4g"
             spark.driver.cores = "2"
@@ -88,7 +88,7 @@ features {
 }
 
 serve {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.12"
+    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
     install = [
         "pip install -r requirements.txt && pip install google-cloud-storage grpcio-tools grpcio protobuf",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
