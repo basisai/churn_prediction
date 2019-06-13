@@ -21,6 +21,9 @@ OUTPUT_MODEL_NAME = "lgb_model.pkl"
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
+SERVING_PORT = os.environ.get("SERVING_PORT", "50051")
+
+
 class PredictorService(serve_pb2_grpc.PredictorServicer):
     def __init__(self):
         self.feature_store = get_feature_store()
@@ -72,7 +75,7 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
 if __name__ == "__main__":
     server = grpc.server(ThreadPoolExecutor(max_workers=10))
     serve_pb2_grpc.add_PredictorServicer_to_server(PredictorService(), server)
-    server.add_insecure_port("[::]:50051")
+    server.add_insecure_port(f"[::]:{SERVING_PORT}")
     server.start()
     try:
         while True:
