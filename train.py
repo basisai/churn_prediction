@@ -67,11 +67,6 @@ if __name__ == '__main__':
 
     # Log metrics
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter("%(asctime)s %(levelname)s  %(name)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
     bedrock = BedrockApi(logger)
     bedrock.log_metric("Accuracy", acc)
