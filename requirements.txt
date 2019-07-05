@@ -7,3 +7,6 @@ google-cloud==0.34.0
 google-cloud-bigquery[pandas,pyarrow]==1.11.3
 gcsfs==0.2.2
 pyarrow==0.13.0
+bedrock-cli==1.0.0
+# scipy keras tensorflow
+pyspark==2.4.3
