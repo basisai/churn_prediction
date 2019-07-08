@@ -1,7 +1,7 @@
 version = "1.0"
 
 train {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
+    image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
     install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
@@ -9,7 +9,7 @@ train {
             // to be passed in as --conf key=value
             conf {
                 spark.executor.instances = "2"
-                spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
+                spark.kubernetes.container.image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -43,7 +43,7 @@ train {
 }
 
 features {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
+    image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
     install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
@@ -51,7 +51,7 @@ features {
             // to be passed in as --conf key=value
             conf {
                 spark.executor.instances = "2"
-                spark.kubernetes.container.image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
+                spark.kubernetes.container.image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -79,7 +79,7 @@ features {
         RAW_NIGHT_CALL_TABLE = "Night_calls"
         SUBSCRIBER_FS = "subscriber_fs"
     }
-    
+
     feature_definition = [
         {
             name = "subscriber_fs"
@@ -90,7 +90,7 @@ features {
 }
 
 serve {
-    image = "asia.gcr.io/span-ai/ds_suite-pyspark:v0.13"
+    image = "python:3.7"
     install = [
         "pip install -r requirements.txt && pip install google-cloud-storage grpcio-tools grpcio protobuf",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
