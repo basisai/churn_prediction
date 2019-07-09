@@ -28,12 +28,12 @@ def preprocess_subscriber(spark):
 
     subscribers_df = (
         subscribers_df
-            .withColumn("Intl_Plan", F.when(F.col("Intl_Plan") == "yes", 1).otherwise(0))
-            .withColumn("VMail_Plan", F.when(F.col("VMail_Plan") == "yes", 1).otherwise(0))
-            .withColumn("Churn", F.when(F.isnull("Date_Closed"), 0).otherwise(1))
-            .drop("Date_Created")
-            .drop("Date_Closed")
-            .drop("Phone")
+        .withColumn("Intl_Plan", F.when(F.col("Intl_Plan") == "yes", 1).otherwise(0))
+        .withColumn("VMail_Plan", F.when(F.col("VMail_Plan") == "yes", 1).otherwise(0))
+        .withColumn("Churn", F.when(F.isnull("Date_Closed"), 0).otherwise(1))
+        .drop("Date_Created")
+        .drop("Date_Closed")
+        .drop("Phone")
     )
 
     # Load raw calls
@@ -64,16 +64,16 @@ def preprocess_subscriber(spark):
 
     raw_calls_df = (
         raw_day_calls_df
-            .union(raw_eve_calls_df)
-            .union(raw_intl_calls_df)
-            .union(raw_night_calls_df)
+        .union(raw_eve_calls_df)
+        .union(raw_intl_calls_df)
+        .union(raw_night_calls_df)
     )
 
     calls_df = (
         raw_calls_df
-            .groupBy("User_id")
-            .pivot("Call_type", ["Day", "Eve", "Night", "Intl"])
-            .agg(F.sum("Duration").alias("Mins"), F.count("Duration").alias("Calls"))
+        .groupBy("User_id")
+        .pivot("Call_type", ["Day", "Eve", "Night", "Intl"])
+        .agg(F.sum("Duration").alias("Mins"), F.count("Duration").alias("Calls"))
     )
 
     # Join subscribers with calls

@@ -4,7 +4,6 @@ Script to train model.
 import logging
 import os
 import pickle
-import sys
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
