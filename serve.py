@@ -17,10 +17,9 @@ from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 SUBSCRIBER_FS = "subscriber_fs"
 OUTPUT_MODEL_NAME = "lgb_model.pkl"
+SERVER_PORT = os.environ.get("SERVER_PORT", "50051")
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
-
-SERVER_PORT = os.environ.get("SERVER_PORT", "50051")
 
 
 class PredictorService(serve_pb2_grpc.PredictorServicer):

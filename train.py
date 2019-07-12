@@ -7,7 +7,7 @@ import pickle
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
+from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 from pyspark.sql import SparkSession
 
@@ -20,17 +20,17 @@ OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
 
 
 if __name__ == '__main__':
-    print("\tGenerate features")
+    print("\tGenerating features")
     with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
-        model_data = generate_features(spark).toPandas()
+        model_data = (
+            generate_features(spark)
+            .drop("User_id")
+            .toPandas()
+        )
 
-    print("\tSplit train and validation data")
+    print("\tSplitting train and validation data")
     TARGET_COL = "Churn"
-    FEATURE_COLS = SUBSCRIBER_FEATURES + \
-        [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
-        [f"State_{state}" for state in STATES]
-
     X = model_data[FEATURE_COLS].values
     y = model_data[TARGET_COL].values
     X_train, X_val, y_train, y_val = train_test_split(
@@ -44,11 +44,11 @@ if __name__ == '__main__':
     )
     gbm.fit(X_train, y_train)
 
-    print("\tSave model")
+    print("\tSaving model")
     with open("/artefact/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
 
-    print("\tPredict using validation data")
+    print("\tEvaluating using validation data")
     y_prob = gbm.predict_proba(X_val)[:, 1]
     y_pred = (y_prob > 0.5).astype(int)
     acc = metrics.accuracy_score(y_val, y_pred)

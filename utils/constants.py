@@ -71,3 +71,7 @@ SUBSCRIBER_FEATURES = [
     'Intl_Mins',
     'Intl_Calls',
 ]
+
+FEATURE_COLS = SUBSCRIBER_FEATURES + \
+    [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
+    [f"State_{state}" for state in STATES]

@@ -98,6 +98,4 @@ def generate_features(spark):
             F.when(F.col("State") == state, 1).otherwise(0)
         )
     joined_df = joined_df.drop("State")
-
-    joined_df = joined_df.drop("User_id")
     return joined_df
