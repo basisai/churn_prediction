@@ -7,7 +7,6 @@ import pickle
 import time
 import grpc
 import numpy as np
-import lightgbm as lgb
 
 import serve_pb2
 import serve_pb2_grpc
@@ -26,8 +25,7 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
     def __init__(self):
         self.feature_store = get_feature_store()
         with open(OUTPUT_MODEL_NAME, "rb") as model_file:
-            self.model: lgb = pickle.load(model_file)
-        # self.model._make_predict_function()
+            self.model = pickle.load(model_file)
 
     def predict_prob(self, User_id):
         """Predict churn probability of user with User_id.
