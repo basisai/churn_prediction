@@ -59,7 +59,7 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
                 row_feats.append(0)
 
         # Score
-        churn_prob = self.model.predict(np.array(row_feats).reshape(1, -1))[:, 1].item()
+        churn_prob = self.model.predict_proba(np.array(row_feats).reshape(1, -1))[:, 1].item()
         return churn_prob
 
     def PredictProb(self, request, context):

@@ -2,10 +2,8 @@
 Script to perform batch scoring.
 """
 import os
-import pandas_gbq
 import pickle
 import time
-import lightgbm as lgb
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 from pyspark.sql import SparkSession
@@ -37,7 +35,7 @@ if __name__ == '__main__':
         gbm = pickle.load(model_file)
 
     print("\tScoring")
-    subscriber_pandasdf["Prob"] = gbm.predict(subscriber_pandasdf[FEATURE_COLS])
+    subscriber_pandasdf["Prob"] = gbm.predict_proba(subscriber_pandasdf[FEATURE_COLS])[:, 1]
 
     start = time.time()
     print("\tSaving scores to BigQuery")
