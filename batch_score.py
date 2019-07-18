@@ -4,9 +4,11 @@ Script to perform batch scoring.
 import os
 import pickle
 import time
+
+from pyspark.sql import SparkSession
+
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
-from pyspark.sql import SparkSession
 
 OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
 DEST_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
@@ -14,7 +16,8 @@ DEST_BIGQUERY_DATASET = os.getenv("RAW_BIGQUERY_DATASET")
 DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
 
 
-if __name__ == '__main__':
+def main():
+    """Batch scoring pipeline"""
     with SparkSession.builder.appName("BatchScoring").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
 
@@ -28,14 +31,17 @@ if __name__ == '__main__':
             .toPandas()
         )
         print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
-        print("\tNumber of active subscribers = {}".format(subscriber_pandasdf.shape[0]))
+        print("\tNumber of active subscribers = {}"
+              .format(subscriber_pandasdf.shape[0]))
 
     print("\tLoading model")
     with open("/artefact/" + OUTPUT_MODEL_NAME, "rb") as model_file:
         gbm = pickle.load(model_file)
 
     print("\tScoring")
-    subscriber_pandasdf["Prob"] = gbm.predict_proba(subscriber_pandasdf[FEATURE_COLS])[:, 1]
+    subscriber_pandasdf["Prob"] = (
+        gbm.predict_proba(subscriber_pandasdf[FEATURE_COLS])[:, 1]
+    )
 
     start = time.time()
     print("\tSaving scores to BigQuery")
@@ -45,3 +51,7 @@ if __name__ == '__main__':
         if_exists="replace",
     )
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
+
+
+if __name__ == '__main__':
+    main()
