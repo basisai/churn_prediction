@@ -140,7 +140,7 @@ batch_score {
 serve {
     image = "python:3.7"
     install = [
-        "pip install grpcio-tools grpcio protobuf",
+        "pip install ply bedrock-cli numpy lightgbm grpcio-tools grpcio protobuf",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
     script = ["python3 serve.py"]
