@@ -23,7 +23,7 @@ def main():
         start = time.time()
         print("\tLoading active subscribers")
         subscriber_df = preprocess_subscriber(spark)
-        subscriber_pandasdf = (
+        subscriber_pd_df = (
             subscriber_df
             .filter(subscriber_df["Churn"] == 0)
             .drop("Churn")
@@ -31,12 +31,12 @@ def main():
         )
         print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
         print("\tNumber of active subscribers = {}"
-              .format(subscriber_pandasdf.shape[0]))
+              .format(subscriber_pd_df.shape[0]))
 
     feature_store = get_feature_store()
     start = time.time()
     print("\tWriting active subscribers into fs")
-    feature_store.write_pandas_df(subscriber_pandasdf,
+    feature_store.write_pandas_df(subscriber_pd_df,
                                   SUBSCRIBER_FS,
                                   "User_id")
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
