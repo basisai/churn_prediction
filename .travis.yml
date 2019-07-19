@@ -15,6 +15,7 @@ install:
 branches:
   only:
     - master
+    - http_serve
 
 script:
   - python -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto
