@@ -28,7 +28,7 @@ train {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
+        RAW_BIGQUERY_PROJECT = "bedrock-dbs"
         RAW_BIGQUERY_DATASET = "churn"
         RAW_SUBSCRIBER_TABLE = "subscribers"
         RAW_DAY_CALL_TABLE = "Day_calls"
