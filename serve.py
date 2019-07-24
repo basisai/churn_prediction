@@ -7,7 +7,6 @@ import logging
 import pickle
 import time
 
-from bedrock_client.bedrock.feature_store import get_feature_store
 import grpc
 import numpy as np
 import serve_pb2
@@ -15,7 +14,6 @@ import serve_pb2_grpc
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-SUBSCRIBER_FS = "subscriber_fs"
 OUTPUT_MODEL_NAME = "lgb_model.pkl"
 SERVER_PORT = os.environ.get("SERVER_PORT", "50051")
 
@@ -25,23 +23,18 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 class PredictorService(serve_pb2_grpc.PredictorServicer):
     """grpc predictor service"""
     def __init__(self):
-        self.feature_store = get_feature_store()
         with open(OUTPUT_MODEL_NAME, "rb") as model_file:
             self.model = pickle.load(model_file)
 
-    def predict_prob(self, user_id):
+    def predict_prob(self, subscriber_features):
         """Predict churn probability of user with User_id.
 
         Args:
-            User_id (str)
+            subscriber_features (dict)
 
         Returns:
             churn_prob (float): churn probability
         """
-        # Get subscriber features from feature store
-        subscriber_features = self.feature_store.read(
-            SUBSCRIBER_FS, [user_id])[user_id]
-
         row_feats = list()
         for col in SUBSCRIBER_FEATURES:
             row_feats.append(subscriber_features[col])
@@ -68,7 +61,24 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
     def PredictProb(self, request, context):
         # pylint: disable=broad-except,invalid-name
         try:
-            churn_prob = self.predict_prob(request.User_id)
+            churn_prob = self.predict_prob(
+                {
+                    "State": request.state,
+                    "Area_Code": request.area_code,
+                    "Intl_Plan": request.intl_plan,
+                    "VMail_Plan": request.vmail_plan,
+                    "VMail_Message": request.vmail_message,
+                    "CustServ_Calls": request.custserv_calls,
+                    "Day_Mins": request.day_mins,
+                    "Day_Calls": request.day_calls,
+                    "Eve_Mins": request.eve_mins,
+                    "Eve_Calls": request.eve_calls,
+                    "Night_Mins": request.night_mins,
+                    "Night_Calls": request.night_calls,
+                    "Intl_Mins": request.intl_mins,
+                    "Intl_Calls": request.intl_calls,
+                }
+            )
             return serve_pb2.PredictResponse(churn_prob=churn_prob)
         except Exception as e:
             logging.error(e, exc_info=True)
