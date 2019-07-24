@@ -5,7 +5,20 @@ service Predictor {
 }
 
 message PredictRequest {
-  string User_id = 1;
+  string state = 1;
+  int32 area_code = 2;
+  int32 intl_plan = 3;
+  int32 vmail_plan = 4;
+  int32 vmail_message = 5;
+  int32 custserv_calls = 6;
+  float day_mins = 7;
+  int32 day_calls = 8;
+  float eve_mins = 9;
+  int32 eve_calls = 10;
+  float night_mins = 11;
+  int32 night_calls = 12;
+  float intl_mins = 13;
+  int32 intl_calls = 14;
 }
 
 message PredictResponse {
