@@ -8,4 +8,4 @@ Preprocess raw data, train and serve ML model for customer churn data.
 See [notebook](./doc/churn_prediction.ipynb)
 
 ### Data processing and model training flowchart
-![flowchart](./doc/flow.png)
+![flowchart](./doc/flow2.png)
