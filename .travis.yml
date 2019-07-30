@@ -10,7 +10,7 @@ python:
 cache: pip
 
 install:
-  - pip install -U pylint pyspark pandas lightgbm bedrock-cli grpcio-tools grpcio protobuf jinja2 werkzeug apache-airflow
+  - pip install -U pylint pyspark pandas lightgbm bdrk grpcio-tools grpcio protobuf jinja2 werkzeug apache-airflow
 
 branches:
   only:
