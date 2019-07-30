@@ -40,7 +40,7 @@ train {
         N_ESTIMATORS = "250"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
-}git
+}
 
 batch_score {
     image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
@@ -80,18 +80,10 @@ batch_score {
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
-
-    feature_definition = [
-        {
-            name = "subscriber_score"
-            key = "User_id"
-            description = "Contains churn probability for each active subscriber. User_id (str)"
-        }
-    ]
 }
 
 serve {
     image = "python:3.7"
-    install = ["pip install ply numpy lightgbm"]
+    install = ["pip install ply bdrk numpy lightgbm"]
     script = ["python3 serve_http.py"]
 }
