@@ -1,7 +1,7 @@
 version = "1.0"
 
 train {
-    image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
+    image = "basisai/workload-standard:v0.1.0"
     install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
@@ -9,7 +9,7 @@ train {
             // to be passed in as --conf key=value
             conf {
                 spark.executor.instances = "2"
-                spark.kubernetes.container.image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -43,7 +43,7 @@ train {
 }
 
 batch_score {
-    image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
+    image = "basisai/workload-standard:v0.1.0"
     install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
@@ -51,7 +51,7 @@ batch_score {
             // to be passed in as --conf key=value
             conf {
                 spark.executor.instances = "2"
-                spark.kubernetes.container.image = "asia.gcr.io/span-ai/pyspark:v2.4.0r2"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
