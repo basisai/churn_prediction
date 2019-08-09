@@ -14,7 +14,7 @@ import serve_pb2_grpc
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-OUTPUT_MODEL_NAME = "lgb_model.pkl"
+OUTPUT_MODEL_NAME = model.pkl"
 SERVER_PORT = os.environ.get("SERVER_PORT", "50051")
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
