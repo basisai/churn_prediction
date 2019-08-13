@@ -87,3 +87,14 @@ serve {
     install = ["pip install ply bdrk numpy lightgbm"]
     script = ["python3 serve_http.py"]
 }
+
+/* To serve using gRPC
+serve {
+    image = "python:3.7"
+    install = [
+        "pip install ply bdrk numpy lightgbm grpcio-tools grpcio protobuf",
+        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
+    ]
+    script = ["python3 serve_grpc.py"]
+}
+*/
