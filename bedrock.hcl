@@ -40,6 +40,10 @@ train {
         N_ESTIMATORS = "250"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
+
+    secrets = [
+        "BEDROCK_ACCESS_TOKEN",
+    ]
 }
 
 batch_score {

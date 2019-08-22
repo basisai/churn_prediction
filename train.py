@@ -5,20 +5,51 @@ import logging
 import os
 import pickle
 
-from bedrock_client.bedrock.api import BedrockApi
 import lightgbm as lgb
+import requests
+from bedrock_client.bedrock.api import BedrockApi
 from pyspark.sql import SparkSession
-
-from sklearn.model_selection import train_test_split
 from sklearn import metrics
+from sklearn.model_selection import train_test_split
+
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
-LR = float(os.getenv('LR'))
-NUM_LEAVES = int(os.getenv('NUM_LEAVES'))
-N_ESTIMATORS = int(os.getenv('N_ESTIMATORS'))
-OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
-TARGET_COL = 'Churn'
+LR = float(os.getenv("LR"))
+NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
+N_ESTIMATORS = int(os.getenv("N_ESTIMATORS"))
+OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
+TARGET_COL = "Churn"
+
+
+def download_artefact(pipeline_run_id: str):
+    print(f"Downloading artefact for pipeline run: {pipeline_run_id}")
+    filename = f"/tmp/{pipeline_run_id}-artefact.zip"
+    with requests.get(
+        f"https://api.amoy.ai/v1/artefact/{pipeline_run_id}/internal",
+        headers={"X-Bedrock-Api-Token": os.environ["BEDROCK_API_TOKEN"]},
+        stream=True,
+    ) as response:
+        response.raise_for_status()
+        with open(filename, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+    return filename
+
+
+def download_artefact_from_latest_run(pipeline_public_id: str):
+    response = requests.get(
+        f"https://api.amoy.ai/v1/training_pipeline/{pipeline_public_id}/run/",
+        headers={"X-Bedrock-Access-Token": os.environ["BEDROCK_ACCESS_TOKEN"]},
+        timeout=30,
+    )
+    response.raise_for_status()
+    runs = response.json()
+    if not runs:
+        raise Exception(f"No run associated with this pipeline: {pipeline_public_id}")
+    last_run = max(runs, key=lambda run: run["created_at"])
+    return download_artefact(last_run["entity_id"])
 
 
 def compute_log_metrics(gbm, x_val, y_val):
@@ -49,8 +80,7 @@ def compute_log_metrics(gbm, x_val, y_val):
     bedrock.log_metric("F1 score", f1_score)
     bedrock.log_metric("AUC", auc)
     bedrock.log_metric("Avg precision", avg_prc)
-    bedrock.log_chart_data(y_val.astype(int).tolist(),
-                           y_prob.flatten().tolist())
+    bedrock.log_chart_data(y_val.astype(int).tolist(), y_prob.flatten().tolist())
 
 
 def main():
@@ -58,25 +88,19 @@ def main():
     print("\tGenerating features")
     with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
-        model_data = (
-            generate_features(spark)
-            .drop("User_id")
-            .toPandas()
-        )
+        model_data = generate_features(spark).drop("User_id").toPandas()
 
     print("\tSplitting train and validation data")
     x_train, x_val, y_train, y_val = train_test_split(
         model_data[FEATURE_COLS].values,
         model_data[TARGET_COL].values,
         test_size=0.2,
-        random_state=42
+        random_state=42,
     )
 
     print("\tTrain model")
     gbm = lgb.LGBMClassifier(
-        num_leaves=NUM_LEAVES,
-        learning_rate=LR,
-        n_estimators=N_ESTIMATORS,
+        num_leaves=NUM_LEAVES, learning_rate=LR, n_estimators=N_ESTIMATORS
     )
     gbm.fit(x_train, y_train)
     compute_log_metrics(gbm, x_val, y_val)
@@ -86,5 +110,5 @@ def main():
         pickle.dump(gbm, model_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
