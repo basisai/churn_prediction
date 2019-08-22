@@ -47,9 +47,11 @@ def download_artefact_from_latest_run(pipeline_public_id: str):
     response.raise_for_status()
     runs = response.json()
     if not runs:
-        raise Exception(f"No run associated with this pipeline: {pipeline_public_id}")
+        print(f"No runs to download: {pipeline_public_id}")
+        return
     last_run = max(runs, key=lambda run: run["created_at"])
-    return download_artefact(last_run["entity_id"])
+    filename = download_artefact(last_run["entity_id"])
+    print(f"Downloaded: {filename}")
 
 
 def compute_log_metrics(gbm, x_val, y_val):
