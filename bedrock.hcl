@@ -39,6 +39,8 @@ train {
         NUM_LEAVES = "10"
         N_ESTIMATORS = "250"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
+        // Will be configured on Bedrock UI after creating a pipeline
+        PIPELINE_PUBLIC_ID = ""
     }
 
     secrets = [
