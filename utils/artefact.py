@@ -20,22 +20,27 @@ def download_artefact_by_run_id(
     """
 
     print(f"Downloading artefact for pipeline run: {pipeline_run_id}")
+    # Call Bedrock API to get the download url of a model artefact by its pipeline run id
     response = requests.get(
-        # Calls Bedrock API to download model artefact by pipeline run id
-        url=f"https://api.bdrk.ai/v1/artefact/{pipeline_run_id}/internal",
-        # The API token is automatically injected into the workload environment by Bedrock
-        headers={"X-Bedrock-Api-Token": os.environ["BEDROCK_API_TOKEN"]},
-        # Stream the response in chunks to minimize memory usage when downloading large artefacts
-        stream=True,
+        # BEDROCK_API_DOMAIN is automatically injected into the workload environment by Bedrock
+        url=f"{os.environ['BEDROCK_API_DOMAIN']}/v1/artefact/{pipeline_run_id}",
+        # The access token is a long lived token generated from "API tokens" page on Bedrock UI.
+        # BEDROCK_ACCESS_TOKEN must be declared as a pipeline secret in bedrock.hcl and saved as
+        # a default value in pipeline settings page on Bedrock UI.
+        headers={"X-Bedrock-Access-Token": os.environ["BEDROCK_ACCESS_TOKEN"]},
+        # Times out the request if no reply is received within 30 seconds
+        timeout=30,
     )
     # Verify that the API call is successful
     response.raise_for_status()
+    artefact = response.json()
 
-    # Save the downloaded file in chunks
+    # Save the downloaded file in chunks to reduce memory usage when downloading large artefacts
+    downloaded = requests.get(url=artefact["download_url"], stream=True)
     filename = output_filepath or f"/tmp/{pipeline_run_id}-artefact.zip"
     with open(filename, "wb") as output:
         # Choose a chunk size in multiples of page size (4KB)
-        for chunk in response.iter_content(chunk_size=8192):
+        for chunk in downloaded.iter_content(chunk_size=8192):
             if chunk:  # filter out keep-alive new chunks
                 output.write(chunk)
 
@@ -55,14 +60,10 @@ def download_artefact_from_latest_run(
     :rtype: str
     """
 
+    # Call Bedrock API to get all runs of the training pipeline
     response = requests.get(
-        # Calls Bedrock API to get all runs of the training pipeline
-        url=f"https://api.bdrk.ai/v1/training_pipeline/{pipeline_public_id}/run/",
-        # The access token is a long lived token generated from "API tokens" page on Bedrock UI.
-        # It must be declared as a pipeline secret in bedrock.hcl and saved as a default value in
-        # pipeline settings page on Bedrock UI.
+        url=f"{os.environ['BEDROCK_API_DOMAIN']}/v1/training_pipeline/{pipeline_public_id}/run/",
         headers={"X-Bedrock-Access-Token": os.environ["BEDROCK_ACCESS_TOKEN"]},
-        # Times out the request if no reply is received within 30 seconds
         timeout=30,
     )
     # Verify that the API call successfully returns a json array
