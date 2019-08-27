@@ -22,6 +22,7 @@ def predict_prob(subscriber_features,
 
     Args:
         subscriber_features (dict)
+        model
 
     Returns:
         churn_prob (float): churn probability
@@ -58,7 +59,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         """Returns the `churn_prob` given the subscriber features"""
-        content_length = int(self.headers['Content-Length'])
+        content_length = int(self.headers["Content-Length"])
         post_data = self.rfile.read(content_length)
         self.send_response(HTTPStatus.OK)
         self.end_headers()
@@ -67,7 +68,7 @@ class Handler(SimpleHTTPRequestHandler):
         result = {
             "churn_prob": predict_prob(subscriber_features)
         }
-        self.wfile.write(bytes(json.dumps(result).encode('utf-8')))
+        self.wfile.write(bytes(json.dumps(result).encode("utf-8")))
 
 
 def main():
