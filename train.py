@@ -14,11 +14,11 @@ from sklearn import metrics
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
-LR = float(os.getenv('LR'))
-NUM_LEAVES = int(os.getenv('NUM_LEAVES'))
-N_ESTIMATORS = int(os.getenv('N_ESTIMATORS'))
-OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
-TARGET_COL = 'Churn'
+LR = float(os.getenv("LR"))
+NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
+N_ESTIMATORS = int(os.getenv("N_ESTIMATORS"))
+OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
+TARGET_COL = "Churn"
 
 
 def compute_log_metrics(gbm, x_val, y_val):
@@ -86,5 +86,5 @@ def main():
         pickle.dump(gbm, model_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

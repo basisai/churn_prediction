@@ -10,7 +10,7 @@ from pyspark.sql import SparkSession
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
-OUTPUT_MODEL_NAME = os.getenv('OUTPUT_MODEL_NAME')
+OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 DEST_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
 DEST_BIGQUERY_DATASET = os.getenv("RAW_BIGQUERY_DATASET")
 DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
@@ -53,5 +53,5 @@ def main():
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
