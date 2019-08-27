@@ -77,7 +77,7 @@ def preprocess_subscriber(spark):
     )
 
     # Join subscribers with calls
-    joined_df = subscribers_df.join(calls_df, on=['User_id'], how='left')
+    joined_df = subscribers_df.join(calls_df, on="User_id", how="left")
     joined_df = joined_df.fillna(0)
     return joined_df
 
