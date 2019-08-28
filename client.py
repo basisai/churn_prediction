@@ -1,3 +1,6 @@
+"""
+Sample gRPC Client
+"""
 import argparse
 import grpc
 
@@ -29,7 +32,8 @@ def do_grpc_request(channel: grpc.Channel):
     )
 
 
-if __name__ == "__main__":
+def main():
+    """Start gRPC Client"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-e", "--endpoint", type=str, required=True, help="Target endpoint"
@@ -41,4 +45,6 @@ if __name__ == "__main__":
     credentials = grpc.ssl_channel_credentials()
     channel = grpc.secure_channel(endpoint, credentials)
     print(do_grpc_request(channel))
-    
+
+if __name__ == "__main__":
+    main()
