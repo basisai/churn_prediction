@@ -12,7 +12,7 @@ import numpy as np
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-OUTPUT_MODEL_NAME = "lgb_model.pkl"
+OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
 SERVER_PORT = int(os.environ.get("SERVER_PORT", "8080"))
 
 
