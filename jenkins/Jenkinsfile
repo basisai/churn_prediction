@@ -1,0 +1,125 @@
+def selectedArtefactId = ''
+def selectedArtefactPipelineRunId = ''
+def modelServerId = ''
+def isDeployed = false
+
+pipeline {
+    agent any
+    parameters {
+        string(name: 'MODEL_ID',     description: 'Model repository')
+        string(name: 'ENDPOINT_ID',  description: 'Endpoint')
+        string(name: 'REPO_URI',     description: 'Git repository',     defaultValue: 'https://github.com/basisai/churn_prediction.git')
+        string(name: 'REPO_REF',     description: 'Branch/commit',      defaultValue: 'master')
+        string(name: 'CPU',          description: 'CPU per replica',    defaultValue: '500m')
+        string(name: 'MEMORY',       description: 'Memory per replica', defaultValue: '0.5Gi')
+        string(name: 'MIN_REPLICAS', description: 'Minimum replicas',   defaultValue: '2')
+        string(name: 'MAX_REPLICAS', description: 'Maximum replicas',   defaultValue: '3')
+    }
+    environment {
+        BEDROCK_ACCESS_TOKEN = credentials('bedrock-access-token')
+    }
+    stages {
+        stage('Test') {
+            parallel {
+                stage('Validate Model') {
+                    steps {
+                        script {
+                            def response = httpRequest(
+                                url: "https://api.bdrk.ai/v1/model/${params.MODEL_ID}/artefact/",
+                                customHeaders: [[name: 'X-Bedrock-Access-Token', value: "${BEDROCK_ACCESS_TOKEN}"]]
+                            )
+
+                            def jsonSlurper = new groovy.json.JsonSlurper()
+                            def latestModel = jsonSlurper.parseText(response.content)['data'][0]
+
+                            selectedArtefactId = latestModel['entity_id']
+                            selectedArtefactPipelineRunId = latestModel['pipeline_run_id']
+                        }
+                        script {
+                            def response = httpRequest(
+                                url: "https://api.bdrk.ai/v1/run/${selectedArtefactPipelineRunId}",
+                                customHeaders: [[name: 'X-Bedrock-Access-Token', value: "${BEDROCK_ACCESS_TOKEN}"]]
+                            )
+
+                            def jsonSlurper = new groovy.json.JsonSlurper()
+                            def pipelineRun = jsonSlurper.parseText(response.content)
+
+                            assert (
+                                pipelineRun['metrics']['Recall']    > 0.7 && 
+                                pipelineRun['metrics']['Accuracy']  > 0.9 && 
+                                pipelineRun['metrics']['Precision'] > 0.9
+                            ): "Model does not meet training performance requirements."
+                        }
+                    }
+                }
+                stage('Run Unit Tests') {
+                    steps { echo 'Running unit tests for model serving code...' }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps { 
+                echo "Deploying model server with artefact ${selectedArtefactId}..."
+                script {
+                    def response = httpRequest(
+                        url: "https://api.bdrk.ai/v1/endpoint/${params.ENDPOINT_ID}/server/",
+                        customHeaders: [[name: 'X-Bedrock-Access-Token', value: "${BEDROCK_ACCESS_TOKEN}"]],
+                        httpMode: 'POST',
+                        requestBody: """
+                            {
+                                "model_version_id": "${selectedArtefactId}",
+                                "source": {
+                                    "uri": "${params.REPO_URI}",
+                                    "ref": "${params.REPO_REF}"
+                                },
+                                "config_file_path": "bedrock.hcl",
+                                "resources": {
+                                    "cpu": "${params.CPU}",
+                                    "memory": "${params.MEMORY}",
+                                    "min_replicas": ${params.MIN_REPLICAS.toInteger()},
+                                    "max_replicas": ${params.MAX_REPLICAS.toInteger()}
+                                }
+                            }
+                        """
+                    )
+
+                    def jsonSlurper = new groovy.json.JsonSlurper()
+                    def modelServer = jsonSlurper.parseText(response.content)
+                    
+                    assert modelServer['status'] == 'DEPLOYING'
+                    modelServerId = modelServer["public_id"]
+                }
+            }
+        }
+        stage('Health Check') {
+            steps {
+                script {
+                    for (check = 0; check < 9; check++) {
+                        if (!isDeployed) {
+                            stage("Health Check ${check}") {
+                                script {
+                                    def response = httpRequest(
+                                        url: "https://api.bdrk.ai/v1/endpoint/${params.ENDPOINT_ID}/server/${modelServerId}",
+                                        customHeaders: [[name: 'X-Bedrock-Access-Token', value: "${BEDROCK_ACCESS_TOKEN}"]]
+                                    )
+
+                                    def jsonSlurper = new groovy.json.JsonSlurper()
+                                    def modelServer = jsonSlurper.parseText(response.content)
+
+                                    echo "Status: ${modelServer['status']}"
+
+                                    isDeployed = modelServer['status'] == 'DEPLOYED'
+
+                                    if (check == 8 && !isDeployed) {
+                                        error 'Deployment failed health check'
+                                    }
+                                }
+                                sleep 30
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
