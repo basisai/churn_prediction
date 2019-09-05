@@ -14,7 +14,7 @@ import serve_pb2_grpc
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-OUTPUT_MODEL_NAME = "lgb_model.pkl"
+OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
 SERVER_PORT = os.environ.get("SERVER_PORT", "50051")
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
@@ -58,7 +58,9 @@ class PredictorService(serve_pb2_grpc.PredictorServicer):
         )
         return churn_prob
 
+    # pylint: disable=unused-argument
     def PredictProb(self, request, context):
+        """Entry point for predicting churn probability."""
         # pylint: disable=broad-except,invalid-name
         try:
             churn_prob = self.predict_prob(

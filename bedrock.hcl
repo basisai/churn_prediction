@@ -8,17 +8,17 @@ train {
             script = "train.py"
             // to be passed in as --conf key=value
             conf {
-                spark.executor.instances = "2"
                 spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
+                spark.executor.instances = "2"
                 spark.executor.memory = "4g"
                 spark.executor.cores = "2"
                 spark.memory.fraction = "0.5"
+                spark.sql.parquet.compression.codec = "gzip"
                 spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
                 spark.hadoop.google.cloud.auth.service.account.enable = "true"
-                spark.sql.parquet.compression.codec = "gzip"
             }
             // to be passed in as --key=value
             settings {
@@ -50,17 +50,17 @@ batch_score {
             script = "batch_score.py"
             // to be passed in as --conf key=value
             conf {
-                spark.executor.instances = "2"
                 spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
+                spark.executor.instances = "2"
                 spark.executor.memory = "4g"
                 spark.executor.cores = "2"
                 spark.memory.fraction = "0.5"
+                spark.sql.parquet.compression.codec = "gzip"
                 spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
                 spark.hadoop.google.cloud.auth.service.account.enable = "true"
-                spark.sql.parquet.compression.codec = "gzip"
             }
             // to be passed in as --key=value
             settings {
@@ -85,7 +85,7 @@ batch_score {
 serve {
     image = "python:3.7"
     install = [
-        "pip install ply bdrk numpy lightgbm grpcio-tools grpcio protobuf",
+        "pip3 install bdrk==0.0.1 numpy==1.17.0 lightgbm==2.2.3 grpcio-tools==1.18.0 grpcio==1.18.0 protobuf==3.6.1",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
     script = ["python3 serve_grpc.py"]

@@ -46,5 +46,6 @@ def main():
     channel = grpc.secure_channel(endpoint, credentials)
     print(do_grpc_request(channel))
 
+
 if __name__ == "__main__":
     main()
