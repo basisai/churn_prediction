@@ -5,30 +5,15 @@ import os
 from .constants import AREA_CODES, STATES
 from pyspark.sql import functions as F
 
-RAW_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
-RAW_BIGQUERY_DATASET = os.getenv("RAW_BIGQUERY_DATASET")
-RAW_SUBSCRIBER_TABLE = os.getenv("RAW_SUBSCRIBER_TABLE")
-RAW_DAY_CALL_TABLE = os.getenv("RAW_DAY_CALL_TABLE")
-RAW_EVE_CALL_TABLE = os.getenv("RAW_EVE_CALL_TABLE")
-RAW_INTL_CALL_TABLE = os.getenv("RAW_INTL_CALL_TABLE")
-RAW_NIGHT_CALL_TABLE = os.getenv("RAW_NIGHT_CALL_TABLE")
-
-BQ_TABLE = "{project}.{dataset}.{table}"
+RAW_SUBSCRIBERS_DATA = os.getenv("RAW_SUBSCRIBERS_DATA")
+RAW_CALLS_DATA = os.getenv("RAW_CALLS_DATA")
 
 
 def preprocess_subscriber(spark):
     """Preprocess subscriber data."""
     # Load subscribers
-    # subscriber_table = BQ_TABLE.format(
-    #     project=RAW_BIGQUERY_PROJECT,
-    #     dataset=RAW_BIGQUERY_DATASET,
-    #     table=RAW_SUBSCRIBER_TABLE,
-    # )
-    # subscribers_df = spark.read.format("bigquery").option("table", subscriber_table).load()
-    subscribers_df = spark.read.parquet("gs://bedrock-sample/churn_data/subscribers.gz.parquet")
-
     subscribers_df = (
-        subscribers_df
+        spark.read.parquet(RAW_SUBSCRIBERS_DATA)
         .withColumn("Intl_Plan", F.when(F.col("Intl_Plan") == "yes", 1).otherwise(0))
         .withColumn("VMail_Plan", F.when(F.col("VMail_Plan") == "yes", 1).otherwise(0))
         .withColumn("Churn", F.when(F.isnull("Date_Closed"), 0).otherwise(1))
@@ -37,42 +22,8 @@ def preprocess_subscriber(spark):
         .drop("Phone")
     )
 
-    # Load raw calls
-    # day_call_table = BQ_TABLE.format(
-    #     project=RAW_BIGQUERY_PROJECT,
-    #     dataset=RAW_BIGQUERY_DATASET,
-    #     table=RAW_DAY_CALL_TABLE,
-    # )
-    # raw_day_calls_df = spark.read.format("bigquery").option("table", day_call_table).load()
-    # eve_call_table = BQ_TABLE.format(
-    #     project=RAW_BIGQUERY_PROJECT,
-    #     dataset=RAW_BIGQUERY_DATASET,
-    #     table=RAW_EVE_CALL_TABLE,
-    # )
-    # raw_eve_calls_df = spark.read.format("bigquery").option("table", eve_call_table).load()
-    # intl_call_table = BQ_TABLE.format(
-    #     project=RAW_BIGQUERY_PROJECT,
-    #     dataset=RAW_BIGQUERY_DATASET,
-    #     table=RAW_INTL_CALL_TABLE,
-    # )
-    # raw_intl_calls_df = spark.read.format("bigquery").option("table", intl_call_table).load()
-    # night_call_table = BQ_TABLE.format(
-    #     project=RAW_BIGQUERY_PROJECT,
-    #     dataset=RAW_BIGQUERY_DATASET,
-    #     table=RAW_NIGHT_CALL_TABLE,
-    # )
-    # raw_night_calls_df = spark.read.format("bigquery").option("table", night_call_table).load()
-    #
-    # raw_calls_df = (
-    #     raw_day_calls_df
-    #     .union(raw_eve_calls_df)
-    #     .union(raw_intl_calls_df)
-    #     .union(raw_night_calls_df)
-    # )
-    raw_calls_df = spark.read.parquet("gs://bedrock-sample/churn_data/all_calls.gz.parquet")
-
     calls_df = (
-        raw_calls_df
+        spark.read.parquet(RAW_CALLS_DATA)
         .groupBy("User_id")
         .pivot("Call_type", ["Day", "Eve", "Night", "Intl"])
         .agg(F.sum("Duration").alias("Mins"), F.count("Duration").alias("Calls"))

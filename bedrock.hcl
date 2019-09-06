@@ -27,13 +27,8 @@ train {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_DAY_CALL_TABLE = "Day_calls"
-        RAW_EVE_CALL_TABLE = "Eve_calls"
-        RAW_INTL_CALL_TABLE = "Intl_calls"
-        RAW_NIGHT_CALL_TABLE = "Night_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "250"
@@ -68,15 +63,10 @@ batch_score {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_DAY_CALL_TABLE = "Day_calls"
-        RAW_EVE_CALL_TABLE = "Eve_calls"
-        RAW_INTL_CALL_TABLE = "Intl_calls"
-        RAW_NIGHT_CALL_TABLE = "Night_calls"
-        DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
+        DEST_CHURN_PROB_DATA = "gs://bedrock-sample/churn_data/processed/subscribers_scores.gz.parquet"
     }
 }
 

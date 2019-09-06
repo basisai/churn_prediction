@@ -11,14 +11,13 @@ from pyspark.sql import SparkSession
 
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from utils.constants import FEATURE_COLS
+from utils.constants import FEATURE_COLS, TARGET_COL
 from utils.preprocess import generate_features
 
 LR = float(os.getenv("LR"))
 NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
 N_ESTIMATORS = int(os.getenv("N_ESTIMATORS"))
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
-TARGET_COL = "Churn"
 
 
 def compute_log_metrics(gbm, x_val, y_val):
@@ -58,11 +57,7 @@ def main():
     print("\tGenerating features")
     with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
-        model_data = (
-            generate_features(spark)
-            .drop("User_id")
-            .toPandas()
-        )
+        model_data = generate_features(spark).drop("User_id").toPandas()
 
     print("\tSplitting train and validation data")
     x_train, x_val, y_train, y_val = train_test_split(
