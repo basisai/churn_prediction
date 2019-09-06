@@ -19,12 +19,13 @@ BQ_TABLE = "{project}.{dataset}.{table}"
 def preprocess_subscriber(spark):
     """Preprocess subscriber data."""
     # Load subscribers
-    subscriber_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
-        table=RAW_SUBSCRIBER_TABLE,
-    )
-    subscribers_df = spark.read.format("bigquery").option("table", subscriber_table).load()
+    # subscriber_table = BQ_TABLE.format(
+    #     project=RAW_BIGQUERY_PROJECT,
+    #     dataset=RAW_BIGQUERY_DATASET,
+    #     table=RAW_SUBSCRIBER_TABLE,
+    # )
+    # subscribers_df = spark.read.format("bigquery").option("table", subscriber_table).load()
+    subscribers_df = spark.read.parquet("gs://bedrock-sample/churn_data/subscribers.gz.parquet")
 
     subscribers_df = (
         subscribers_df
@@ -37,37 +38,38 @@ def preprocess_subscriber(spark):
     )
 
     # Load raw calls
-    day_call_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
-        table=RAW_DAY_CALL_TABLE,
-    )
-    raw_day_calls_df = spark.read.format("bigquery").option("table", day_call_table).load()
-    eve_call_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
-        table=RAW_EVE_CALL_TABLE,
-    )
-    raw_eve_calls_df = spark.read.format("bigquery").option("table", eve_call_table).load()
-    intl_call_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
-        table=RAW_INTL_CALL_TABLE,
-    )
-    raw_intl_calls_df = spark.read.format("bigquery").option("table", intl_call_table).load()
-    night_call_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
-        table=RAW_NIGHT_CALL_TABLE,
-    )
-    raw_night_calls_df = spark.read.format("bigquery").option("table", night_call_table).load()
-
-    raw_calls_df = (
-        raw_day_calls_df
-        .union(raw_eve_calls_df)
-        .union(raw_intl_calls_df)
-        .union(raw_night_calls_df)
-    )
+    # day_call_table = BQ_TABLE.format(
+    #     project=RAW_BIGQUERY_PROJECT,
+    #     dataset=RAW_BIGQUERY_DATASET,
+    #     table=RAW_DAY_CALL_TABLE,
+    # )
+    # raw_day_calls_df = spark.read.format("bigquery").option("table", day_call_table).load()
+    # eve_call_table = BQ_TABLE.format(
+    #     project=RAW_BIGQUERY_PROJECT,
+    #     dataset=RAW_BIGQUERY_DATASET,
+    #     table=RAW_EVE_CALL_TABLE,
+    # )
+    # raw_eve_calls_df = spark.read.format("bigquery").option("table", eve_call_table).load()
+    # intl_call_table = BQ_TABLE.format(
+    #     project=RAW_BIGQUERY_PROJECT,
+    #     dataset=RAW_BIGQUERY_DATASET,
+    #     table=RAW_INTL_CALL_TABLE,
+    # )
+    # raw_intl_calls_df = spark.read.format("bigquery").option("table", intl_call_table).load()
+    # night_call_table = BQ_TABLE.format(
+    #     project=RAW_BIGQUERY_PROJECT,
+    #     dataset=RAW_BIGQUERY_DATASET,
+    #     table=RAW_NIGHT_CALL_TABLE,
+    # )
+    # raw_night_calls_df = spark.read.format("bigquery").option("table", night_call_table).load()
+    #
+    # raw_calls_df = (
+    #     raw_day_calls_df
+    #     .union(raw_eve_calls_df)
+    #     .union(raw_intl_calls_df)
+    #     .union(raw_night_calls_df)
+    # )
+    raw_calls_df = spark.read.parquet("gs://bedrock-sample/churn_data/all_calls.gz.parquet")
 
     calls_df = (
         raw_calls_df

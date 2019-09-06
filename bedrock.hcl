@@ -22,7 +22,6 @@ train {
             }
             // to be passed in as --key=value
             settings {
-                jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
             }
         }}
     ]
@@ -64,7 +63,6 @@ batch_score {
             }
             // to be passed in as --key=value
             settings {
-                jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
             }
         }}
     ]
