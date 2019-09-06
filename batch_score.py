@@ -11,7 +11,9 @@ from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
-DEST_CHURN_PROB_DATA = os.getenv("DEST_CHURN_PROB_DATA")
+DEST_BIGQUERY_PROJECT = os.getenv("DEST_BIGQUERY_PROJECT")
+DEST_BIGQUERY_DATASET = os.getenv("DEST_BIGQUERY_DATASET")
+DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
 
 
 def main():
@@ -42,17 +44,12 @@ def main():
     )
 
     start = time.time()
-    subscriber_pd_df[["User_id", "Prob"]].to_parquet(
-        DEST_CHURN_PROB_DATA,
-        engine="fastparquet",
-        compression="gzip",
+    print("\tSaving scores to BigQuery")
+    subscriber_pd_df[["User_id", "Prob"]].to_gbq(
+        f"{DEST_BIGQUERY_DATASET}.{DEST_SUBSCRIBER_SCORE_TABLE}",
+        project_id=DEST_BIGQUERY_PROJECT,
+        if_exists="replace",
     )
-    # print("\tSaving scores to BigQuery")
-    # subscriber_pd_df[["User_id", "Prob"]].to_gbq(
-    #     f"{DEST_BIGQUERY_DATASET}.{DEST_SUBSCRIBER_SCORE_TABLE}",
-    #     project_id=DEST_BIGQUERY_PROJECT,
-    #     if_exists="replace",
-    # )
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
 
 
