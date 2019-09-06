@@ -66,7 +66,7 @@ batch_score {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
-        DEST_CHURN_PROB_DATA = "gs://bedrock-sample/churn_data/processed/subscribers_scores.gz.parquet"
+        DEST_CHURN_PROB_DATA = "gs://bedrock-sample/churn_data/batch_scoring/subscribers_scores.gz.parquet"
     }
 }
 
