@@ -22,6 +22,7 @@ def preprocess_subscriber(spark):
         .drop("Phone")
     )
 
+    # Load raw calls
     calls_df = (
         spark.read.parquet(RAW_CALLS_DATA)
         .groupBy("User_id")
