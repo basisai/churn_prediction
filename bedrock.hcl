@@ -1,14 +1,14 @@
 version = "1.0"
 
 train {
-    image = "basisai/workload-standard:v0.1.0"
+    image = "basisai/workload-standard:v0.1.2"
     install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
             script = "train.py"
             // to be passed in as --conf key=value
             conf {
-                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -31,10 +31,7 @@ train {
         RAW_BIGQUERY_PROJECT = "span-production"
         RAW_BIGQUERY_DATASET = "churn"
         RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_DAY_CALL_TABLE = "Day_calls"
-        RAW_EVE_CALL_TABLE = "Eve_calls"
-        RAW_INTL_CALL_TABLE = "Intl_calls"
-        RAW_NIGHT_CALL_TABLE = "Night_calls"
+        RAW_ALL_CALLS_TABLE = "all_calls"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "250"
@@ -43,14 +40,14 @@ train {
 }
 
 batch_score {
-    image = "basisai/workload-standard:v0.1.0"
+    image = "basisai/workload-standard:v0.1.2"
     install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
             // to be passed in as --conf key=value
             conf {
-                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -73,10 +70,7 @@ batch_score {
         RAW_BIGQUERY_PROJECT = "span-production"
         RAW_BIGQUERY_DATASET = "churn"
         RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_DAY_CALL_TABLE = "Day_calls"
-        RAW_EVE_CALL_TABLE = "Eve_calls"
-        RAW_INTL_CALL_TABLE = "Intl_calls"
-        RAW_NIGHT_CALL_TABLE = "Night_calls"
+        RAW_ALL_CALLS_TABLE = "all_calls"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
@@ -85,7 +79,7 @@ batch_score {
 serve {
     image = "python:3.7"
     install = [
-        "pip3 install bdrk==0.0.1 numpy==1.17.0 lightgbm==2.2.3 grpcio-tools==1.18.0 grpcio==1.18.0 protobuf==3.6.1",
+        "pip3 install -r requirements-serve.txt",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
     script = ["python3 serve_grpc.py"]
