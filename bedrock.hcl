@@ -1,14 +1,14 @@
 version = "1.0"
 
 train {
-    image = "basisai/workload-standard:v0.1.0"
+    image = "basisai/workload-standard:v0.1.2"
     install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
             script = "train.py"
             // to be passed in as --conf key=value
             conf {
-                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -40,14 +40,14 @@ train {
 }
 
 batch_score {
-    image = "basisai/workload-standard:v0.1.0"
+    image = "basisai/workload-standard:v0.1.2"
     install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
             // to be passed in as --conf key=value
             conf {
-                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.0"
+                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
                 spark.kubernetes.pyspark.pythonVersion = "3"
                 spark.driver.memory = "4g"
                 spark.driver.cores = "2"
@@ -79,7 +79,7 @@ batch_score {
 serve {
     image = "python:3.7"
     install = [
-        "pip3 install bdrk==0.0.1 numpy==1.17.0 lightgbm==2.2.3 grpcio-tools==1.18.0 grpcio==1.18.0 protobuf==3.6.1",
+        "pip3 install -r requirements-serve.txt",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
     script = ["python3 serve_grpc.py"]
