@@ -11,6 +11,7 @@ from pyspark.sql import SparkSession
 
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
+from utils.artefact import download_and_unzip_artefact
 from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
@@ -55,6 +56,9 @@ def compute_log_metrics(gbm, x_val, y_val):
 
 def main():
     """Train pipeline"""
+    if not download_and_unzip_artefact():
+        print("\tTraining from scratch")
+
     print("\tGenerating features")
     with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
         spark.sparkContext.setLogLevel("FATAL")
