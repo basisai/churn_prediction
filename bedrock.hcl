@@ -28,10 +28,8 @@ train {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "250"
@@ -73,10 +71,10 @@ batch_score {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
+        BIGQUERY_PROJECT = "span-production"
+        BIGQUERY_DATASET = "churn"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
