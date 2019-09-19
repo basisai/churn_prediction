@@ -18,5 +18,4 @@ branches:
     - http_serve
 
 script:
-  - python -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto
   - pylint --disable=duplicate-code --ignore=serve_pb2.py,serve_pb2_grpc.py *.py
