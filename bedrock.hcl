@@ -22,26 +22,23 @@ train {
             }
             // to be passed in as --key=value
             settings {
-                jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
             }
         }}
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         LR = "0.05"
         NUM_LEAVES = "10"
-        N_ESTIMATORS = "250"
+        N_ESTIMATORS = "150"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
 }
 
 batch_score {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+    install = ["pip3 install ply && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
@@ -67,10 +64,10 @@ batch_score {
     ]
 
     parameters {
-        RAW_BIGQUERY_PROJECT = "span-production"
-        RAW_BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
+        BIGQUERY_PROJECT = "span-production"
+        BIGQUERY_DATASET = "churn"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
