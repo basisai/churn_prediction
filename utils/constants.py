@@ -75,3 +75,5 @@ SUBSCRIBER_FEATURES = [
 FEATURE_COLS = SUBSCRIBER_FEATURES + \
     [f"Area_Code_{area_code}" for area_code in AREA_CODES] + \
     [f"State_{state}" for state in STATES]
+
+TARGET_COL = "Churn"

@@ -11,8 +11,8 @@ from utils.constants import FEATURE_COLS
 from utils.preprocess import generate_features
 
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
-DEST_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
-DEST_BIGQUERY_DATASET = os.getenv("RAW_BIGQUERY_DATASET")
+BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
+BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
 DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
 
 
@@ -46,8 +46,8 @@ def main():
     start = time.time()
     print("\tSaving scores to BigQuery")
     subscriber_pd_df[["User_id", "Prob"]].to_gbq(
-        f"{DEST_BIGQUERY_DATASET}.{DEST_SUBSCRIBER_SCORE_TABLE}",
-        project_id=DEST_BIGQUERY_PROJECT,
+        f"{BIGQUERY_DATASET}.{DEST_SUBSCRIBER_SCORE_TABLE}",
+        project_id=BIGQUERY_PROJECT,
         if_exists="replace",
     )
     print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
