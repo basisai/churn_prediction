@@ -2,7 +2,7 @@ version = "1.0"
 
 train {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install ply && pip3 install -r requirements.txt"]
+    install = ["pip3 install -r requirements.txt"]
     script = [
         {spark-submit {
             script = "train.py"
@@ -38,7 +38,7 @@ train {
 
 batch_score {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install ply && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+    install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
@@ -64,7 +64,7 @@ batch_score {
     ]
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers2.gz.parquet"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         BIGQUERY_PROJECT = "span-production"
         BIGQUERY_DATASET = "churn"
