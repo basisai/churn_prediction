@@ -22,16 +22,13 @@ train {
             }
             // to be passed in as --key=value
             settings {
-                jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
             }
         }}
     ]
 
     parameters {
-        BIGQUERY_PROJECT = "span-production"
-        BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "150"
@@ -67,10 +64,10 @@ batch_score {
     ]
 
     parameters {
+        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers2.gz.parquet"
+        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
         BIGQUERY_PROJECT = "span-production"
         BIGQUERY_DATASET = "churn"
-        RAW_SUBSCRIBER_TABLE = "subscribers"
-        RAW_ALL_CALLS_TABLE = "all_calls"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }

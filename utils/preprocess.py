@@ -6,37 +6,23 @@ from pyspark.sql import functions as F
 
 from .constants import AREA_CODES, STATES, FEATURE_COLS, TARGET_COL
 
-BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
-BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
-RAW_SUBSCRIBER_TABLE = os.getenv("RAW_SUBSCRIBER_TABLE")
-RAW_ALL_CALLS_TABLE = os.getenv("RAW_ALL_CALLS_TABLE")
-
-BQ_TABLE = "{project}.{dataset}.{table}"
+RAW_SUBSCRIBERS_DATA = os.getenv("RAW_SUBSCRIBERS_DATA")
+RAW_CALLS_DATA = os.getenv("RAW_CALLS_DATA")
 
 
 def preprocess_subscriber(spark):
     """Preprocess subscriber data."""
     # Load subscribers
-    subscriber_table = BQ_TABLE.format(
-        project=BIGQUERY_PROJECT,
-        dataset=BIGQUERY_DATASET,
-        table=RAW_SUBSCRIBER_TABLE,
-    )
     subscribers_df = (
-        spark.read.format("bigquery").option("table", subscriber_table).load()
+        spark.read.parquet(RAW_SUBSCRIBERS_DATA)
         .withColumn("Intl_Plan", F.when(F.col("Intl_Plan") == "yes", 1).otherwise(0))
         .withColumn("VMail_Plan", F.when(F.col("VMail_Plan") == "yes", 1).otherwise(0))
         .withColumn("Churn", F.when(F.col("Churn") == "yes", 1).otherwise(0))
     )
 
     # Load raw calls
-    all_calls_table = BQ_TABLE.format(
-        project=BIGQUERY_PROJECT,
-        dataset=BIGQUERY_DATASET,
-        table=RAW_ALL_CALLS_TABLE,
-    )
     calls_df = (
-        spark.read.format("bigquery").option("table", all_calls_table).load()
+        spark.read.parquet(RAW_CALLS_DATA)
         .groupBy("User_id")
         .pivot("Call_type", ["Day", "Eve", "Night", "Intl"])
         .agg(F.sum("Duration").alias("Mins"), F.count("Duration").alias("Calls"))
