@@ -12,11 +12,9 @@ See [notebook](./doc/churn_prediction.ipynb)
 
 ### Test your server
 ```
-pip3 install -r requirements-serve.txt
-
-# generate the grpc stubs
-python3 -m grpc_tools.protoc -I ./protos --python_out=. --grpc_python_out=. serve.proto
-
-# run the client
-python3 client.py -e <Your endpoint>
+curl -X POST \
+  <MODEL_ENDPOINT_URL> \
+  -H 'Content-Type: application/json' \
+  -H 'X-Bedrock-Api-Token: <MODEL_ENDPOINT_TOKEN>' \
+  -d '{"State": "ME", "Area_Code": 408, "Intl_Plan": 1, "VMail_Plan": 1, "VMail_Message": 21, "CustServ_Calls": 4, "Day_Mins": 156.5, "Day_Calls": 122, "Eve_Mins": 209.2, "Eve_Calls": 125, "Night_Mins": 158.7, "Night_Calls": 81, "Intl_Mins": 11.1, "Intl_Calls": 3}'
 ```

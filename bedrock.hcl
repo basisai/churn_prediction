@@ -75,9 +75,6 @@ batch_score {
 
 serve {
     image = "python:3.7"
-    install = [
-        "pip3 install -r requirements-serve.txt",
-        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
-    ]
-    script = ["python3 serve_grpc.py"]
+    install = ["pip3 install -r requirements-serve.txt"]
+    script = ["python3 serve_http.py"]
 }
