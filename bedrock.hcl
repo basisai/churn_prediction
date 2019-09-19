@@ -38,7 +38,7 @@ train {
 
 batch_score {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install ply && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+    install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
