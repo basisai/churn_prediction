@@ -2,11 +2,12 @@
 Script to preprocess subscribers.
 """
 import os
-from .constants import AREA_CODES, STATES
 from pyspark.sql import functions as F
 
-RAW_BIGQUERY_PROJECT = os.getenv("RAW_BIGQUERY_PROJECT")
-RAW_BIGQUERY_DATASET = os.getenv("RAW_BIGQUERY_DATASET")
+from .constants import AREA_CODES, STATES, FEATURE_COLS, TARGET_COL
+
+BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
+BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
 RAW_SUBSCRIBER_TABLE = os.getenv("RAW_SUBSCRIBER_TABLE")
 RAW_ALL_CALLS_TABLE = os.getenv("RAW_ALL_CALLS_TABLE")
 
@@ -17,24 +18,21 @@ def preprocess_subscriber(spark):
     """Preprocess subscriber data."""
     # Load subscribers
     subscriber_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
+        project=BIGQUERY_PROJECT,
+        dataset=BIGQUERY_DATASET,
         table=RAW_SUBSCRIBER_TABLE,
     )
     subscribers_df = (
         spark.read.format("bigquery").option("table", subscriber_table).load()
         .withColumn("Intl_Plan", F.when(F.col("Intl_Plan") == "yes", 1).otherwise(0))
         .withColumn("VMail_Plan", F.when(F.col("VMail_Plan") == "yes", 1).otherwise(0))
-        .withColumn("Churn", F.when(F.isnull("Date_Closed"), 0).otherwise(1))
-        .drop("Date_Created")
-        .drop("Date_Closed")
-        .drop("Phone")
+        .withColumn("Churn", F.when(F.col("Churn") == "yes", 1).otherwise(0))
     )
 
     # Load raw calls
     all_calls_table = BQ_TABLE.format(
-        project=RAW_BIGQUERY_PROJECT,
-        dataset=RAW_BIGQUERY_DATASET,
+        project=BIGQUERY_PROJECT,
+        dataset=BIGQUERY_DATASET,
         table=RAW_ALL_CALLS_TABLE,
     )
     calls_df = (
@@ -58,12 +56,12 @@ def generate_features(spark):
             "Area_Code_{}".format(area_code),
             F.when(F.col("Area_Code") == area_code, 1).otherwise(0)
         )
-    joined_df = joined_df.drop("Area_Code")
 
     for state in STATES:
         joined_df = joined_df.withColumn(
             "State_{}".format(state),
             F.when(F.col("State") == state, 1).otherwise(0)
         )
-    joined_df = joined_df.drop("State")
+
+    joined_df = joined_df.select(FEATURE_COLS + [TARGET_COL])
     return joined_df
