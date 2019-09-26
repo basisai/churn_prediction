@@ -1,3 +1,4 @@
+ // Refer to https://docs.basis-ai.com/getting-started/writing-files/bedrock.hcl for more details.
 version = "1.0"
 
 /*
@@ -8,8 +9,6 @@ Comprises the following:
 - [required] script: the command that calls the script
 - [optional] parameters: any environment variables used by the script for convenience
 - [optional] secrets: the names of the secrets necessary to run the script successfully
-
-Please refer to https://docs.basis-ai.com/getting-started/writing-files/bedrock.hcl for more details.
 */
 train {
     image = "basisai/workload-standard:v0.1.2"
@@ -101,7 +100,7 @@ batch_score {
 }
 
 /*
-Serve stanza
+Serve stanza for HTTP serving
 Only comprises the following:
 - [required] image: the base Docker image that the script will run in
 - [optional] install: the command to install any other packages not covered in the image
