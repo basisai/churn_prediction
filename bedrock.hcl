@@ -49,10 +49,8 @@ train {
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
 
-    // only provide the NAMES of the secrets here, NOT the secrets themselves.
-    // you will enter the secrets from Bedrock web UI.
-    // refer to https://docs.basis-ai.com/getting-started/writing-files/bedrock.hcl
-    // for more details on how to include secrets in the stanza.
+    // only provide the NAMES of the secrets here, NOT the secret values.
+    // you will enter the secret values from Bedrock web UI.
     /*
     secrets = [
         "SECRET_KEY_1",
