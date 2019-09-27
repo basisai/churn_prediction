@@ -2,9 +2,9 @@
 Script for serving.
 """
 import pickle
-from flask import Flask, request
 
 import numpy as np
+from flask import Flask, request
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 

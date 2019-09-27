@@ -8,7 +8,7 @@ python:
 cache: pip
 
 install:
-  - pip install -U pylint pyspark lightgbm bdrk scikit-learn
+  - pip install -U bdrk flask lightgbm pylint pyspark scikit-learn
 
 branches:
   only:
