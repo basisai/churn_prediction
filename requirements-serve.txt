@@ -1,2 +1,4 @@
 numpy==1.17.0
 lightgbm==2.2.3
+flask==1.1.1
+gunicorn==19.9.0

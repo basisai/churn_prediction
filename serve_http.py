@@ -1,19 +1,14 @@
 """
 Script for serving.
 """
-import json
-import os
 import pickle
-import socketserver
-from http import HTTPStatus
-from http.server import SimpleHTTPRequestHandler
+from flask import Flask, request
 
 import numpy as np
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
-SERVER_PORT = int(os.environ.get("SERVER_PORT", "8080"))
 
 
 def predict_prob(subscriber_features,
@@ -53,29 +48,23 @@ def predict_prob(subscriber_features,
     return churn_prob
 
 
-# pylint: disable=invalid-name
-class Handler(SimpleHTTPRequestHandler):
-    """Handler for http requests"""
+app = Flask(__name__)
 
-    def do_POST(self):
-        """Returns the `churn_prob` given the subscriber features"""
-        content_length = int(self.headers["Content-Length"])
-        post_data = self.rfile.read(content_length)
-        self.send_response(HTTPStatus.OK)
-        self.end_headers()
 
-        subscriber_features = json.loads(post_data.decode("utf-8"))
-        result = {
-            "churn_prob": predict_prob(subscriber_features)
-        }
-        self.wfile.write(bytes(json.dumps(result).encode("utf-8")))
+@app.route("/", methods=["POST"])
+def get_churn():
+    """Returns the `churn_prob` given the subscriber features"""
+
+    subscriber_features = request.json
+    result = {
+        "churn_prob": predict_prob(subscriber_features)
+    }
+    return result
 
 
 def main():
     """Starts the Http server"""
-    print(f"Starting server at {SERVER_PORT}")
-    httpd = socketserver.TCPServer(("", SERVER_PORT), Handler)
-    httpd.serve_forever()
+    app.run()
 
 
 if __name__ == "__main__":

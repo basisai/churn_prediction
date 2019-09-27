@@ -109,5 +109,5 @@ Only comprises the following:
 serve {
     image = "python:3.7"
     install = ["pip3 install -r requirements-serve.txt"]
-    script = ["python3 serve_http.py"]
+    script = ["gunicorn --bind=:${SERVER_PORT:-8080} --workers=2 serve_http:app"]
 }
