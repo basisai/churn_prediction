@@ -48,6 +48,7 @@ def predict_prob(subscriber_features,
     return churn_prob
 
 
+# pylint: disable=invalid-name
 app = Flask(__name__)
 
 

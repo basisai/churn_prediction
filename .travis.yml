@@ -1,5 +1,3 @@
-sudo: required
-
 dist: xenial
 
 language: python
@@ -10,7 +8,7 @@ python:
 cache: pip
 
 install:
-  - pip install -U pylint pyspark pandas lightgbm bdrk grpcio-tools grpcio protobuf jinja2 werkzeug apache-airflow
+  - pip install -U pylint pyspark lightgbm bdrk scikit-learn
 
 branches:
   only:
@@ -18,4 +16,4 @@ branches:
     - http_serve
 
 script:
-  - pylint --disable=duplicate-code --ignore=serve_pb2.py,serve_pb2_grpc.py *.py
+  - pylint *.py
