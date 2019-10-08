@@ -1,93 +1,98 @@
 import glob
 import os
-import zipfile
-from typing import Optional
 
-import requests
+from typing import Optional
+from bdrk.v1_util import download_and_unzip_artefact, get_artefact_stream
+from bdrk.v1 import ApiClient, Configuration, ModelApi, PipelineApi, ServeApi
+
+configuration = Configuration()
+
+configuration.api_key["X-Bedrock-Access-Token"] = os.environ["BEDROCK_ACCESS_TOKEN"]
+configuration.host = os.environ['BEDROCK_API_DOMAIN']
+
+api_client = ApiClient(configuration)
+pipeline_api = PipelineApi(api_client)
+serve_api = ServeApi(api_client)
+model_api = ModelApi(api_client)
 
 
 def download_artefact_by_run_id(
-    pipeline_run_id: str, output_filepath: Optional[str] = None
+    pipeline_id: str,
+    pipeline_run_id: str,
+    output_filepath: Optional[str] = None
 ) -> str:
     """
     Downloads the model artefact produced by a specific pipeline run to a local directory,
     defaults to `/tmp/{pipeline_run_id}-artefact.zip`.
 
+    :param pipeline_id: The public id of the pipeline to download from
+    :type pipeline_id: str
     :param pipeline_run_id: The public id of the pipeline run to download from
     :type pipeline_run_id: str
+    :param output_filepath: Output file name with path
+    :type output_filepath: str
     :return: The file path that the artefact is saved to
     :rtype: str
     """
 
-    print(f"Downloading artefact for pipeline run: {pipeline_run_id}")
-    # Call Bedrock API to get the download url of a model artefact by its pipeline run id
-    response = requests.get(
-        # BEDROCK_API_DOMAIN is automatically injected into the workload environment by Bedrock
-        url=f"{os.environ['BEDROCK_API_DOMAIN']}/v1/artefact/{pipeline_run_id}",
-        # The access token is a long lived token generated from "API tokens" page on Bedrock UI.
-        # BEDROCK_ACCESS_TOKEN must be declared as a pipeline secret in bedrock.hcl and saved as
-        # a default value in pipeline settings page on Bedrock UI.
-        headers={"X-Bedrock-Access-Token": os.environ["BEDROCK_ACCESS_TOKEN"]},
-        # Times out the request if no reply is received within 30 seconds
-        timeout=30,
-    )
-    # Verify that the API call is successful
-    response.raise_for_status()
-    artefact = response.json()
+    print(f"Downloading artefact for pipeline {pipeline_id} and run: {pipeline_run_id}")
+    pipeline = pipeline_api.get_training_pipeline_by_id(pipeline_id=pipeline_id)
+    run = pipeline_api.get_training_pipeline_run(pipeline_id=pipeline_id, run_id=pipeline_run_id)
 
-    # Save the downloaded file in chunks to reduce memory usage when downloading large artefacts
-    downloaded = requests.get(url=artefact["download_url"], stream=True)
+    stream = get_artefact_stream(
+        api_client=api_client,
+        model_id=pipeline.model_id,
+        model_artefact_id=run.artefact_id
+    )
     filename = output_filepath or f"/tmp/{pipeline_run_id}-artefact.zip"
     with open(filename, "wb") as output:
-        # Choose a chunk size in multiples of page size (4KB)
-        for chunk in downloaded.iter_content(chunk_size=8192):
-            if chunk:  # filter out keep-alive new chunks
-                output.write(chunk)
+        output.write(stream.read())
 
     return filename
 
 
+def _get_latest_run(pipeline_id: str):
+    # Call Bedrock API to get all runs of the training pipeline
+    runs = pipeline_api.get_training_pipeline_runs(pipeline_id=pipeline_id)
+
+    # Filter by creation time for the last successful run
+    successful_runs = filter(lambda run: run.status == "Succeeded", runs)
+    try:
+        last_run = max(successful_runs, key=lambda run: run.updated_at)
+    except ValueError as exc:
+        raise Exception(
+            f"No successful runs found for pipeline: {pipeline_id}"
+        ) from exc
+    return last_run
+
+
 def download_artefact_from_latest_run(
-    pipeline_public_id: str, output_filepath: Optional[str] = None
+    pipeline_id: str, output_filepath: Optional[str] = None
 ) -> Optional[str]:
     """
     Downloads the model artefact produced by the latest successful run of a given pipeline. The output
     filepath defaults to `/tmp/{pipeline_run_id}-artefact.zip`.
 
-    :param pipeline_public_id: The public id of the pipeline to download from
-    :type pipeline_public_id: str
+    :param pipeline_id: The public id of the pipeline to download from
+    :type pipeline_id: str
+    :param output_filepath: Output filename with path
+    :type output_filepath: str
     :return: The file path that the artefact is saved to
     :rtype: str
     """
 
-    # Call Bedrock API to get all runs of the training pipeline
-    response = requests.get(
-        url=f"{os.environ['BEDROCK_API_DOMAIN']}/v1/training_pipeline/{pipeline_public_id}/run/",
-        headers={"X-Bedrock-Access-Token": os.environ["BEDROCK_ACCESS_TOKEN"]},
-        timeout=30,
-    )
-    # Verify that the API call successfully returns a json array
-    response.raise_for_status()
-    runs = response.json()
-
-    # Filter by creation time for the last successful run
-    successful_runs = filter(lambda run: run["status"] == "Succeeded", runs)
-    try:
-        last_run = max(successful_runs, key=lambda run: run["created_at"])
-    except ValueError as exc:
-        raise Exception(
-            f"No successful runs found for pipieline: {pipeline_public_id}"
-        ) from exc
+    last_run = _get_latest_run(pipeline_id)
 
     # Calls Bedrock API again to download artefact from the latest run
-    filename = download_artefact_by_run_id(
-        pipeline_run_id=last_run["entity_id"], output_filepath=output_filepath
-    )
+    filename = download_artefact_by_run_id(pipeline_id=pipeline_id,
+                                           pipeline_run_id=last_run.entity_id,
+                                           output_filepath=output_filepath)
+
     print(f"Downloaded artefact: {filename}")
     return filename
 
 
-def download_and_unzip_artefact(output_directory: Optional[str] = None) -> bool:
+def download_and_unzip_latest_artefact(output_directory: Optional[str] = None) -> bool:
     """
     Downloads and unzips the model artefact of the last successful run of the current pipeline.
     The default unzip path is `/tmp/{pipeline_id}`.
@@ -113,13 +118,14 @@ def download_and_unzip_artefact(output_directory: Optional[str] = None) -> bool:
         # this parameter to an empty string to retrain from scratch.
         return False
 
-    # Download artefact from the last successful pipeline run
-    filename = download_artefact_from_latest_run(pipeline_public_id=pipeline_id)
+    pipeline = pipeline_api.get_training_pipeline_by_id(pipeline_id=pipeline_id)
+    last_run = _get_latest_run(pipeline_id)
 
     # Extract the downloaded artefacts
-    output_directory = output_directory or f"/tmp/{pipeline_id}"
-    with zipfile.ZipFile(filename, "r") as f:
-        f.extractall(path=output_directory)
+    download_and_unzip_artefact(api_client=api_client,
+                                model_id=pipeline.model_id,
+                                model_artefact_id=last_run.artefact_id,
+                                output_dir=output_directory or f"/tmp/{pipeline_id}")
 
     # List the contents for manual verification
     print(glob.glob(f"{output_directory}/*"))
