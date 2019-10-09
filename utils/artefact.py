@@ -7,13 +7,12 @@ from bdrk.v1 import ApiClient, Configuration, ModelApi, PipelineApi, ServeApi
 
 configuration = Configuration()
 
+# This is your personal access token https://docs.basis-ai.com/getting-started/rest-apis/personal-api-token
 configuration.api_key["X-Bedrock-Access-Token"] = os.environ["BEDROCK_ACCESS_TOKEN"]
-configuration.host = os.environ['BEDROCK_API_DOMAIN']
+configuration.host = os.environ.get("BEDROCK_API_DOMAIN", "https://api.bdrk.ai")
 
 api_client = ApiClient(configuration)
 pipeline_api = PipelineApi(api_client)
-serve_api = ServeApi(api_client)
-model_api = ModelApi(api_client)
 
 
 def download_artefact_by_run_id(
@@ -84,9 +83,11 @@ def download_artefact_from_latest_run(
     last_run = _get_latest_run(pipeline_id)
 
     # Calls Bedrock API again to download artefact from the latest run
-    filename = download_artefact_by_run_id(pipeline_id=pipeline_id,
-                                           pipeline_run_id=last_run.entity_id,
-                                           output_filepath=output_filepath)
+    filename = download_artefact_by_run_id(
+        pipeline_id=pipeline_id,
+        pipeline_run_id=last_run.entity_id,
+        output_filepath=output_filepath
+    )
 
     print(f"Downloaded artefact: {filename}")
     return filename
@@ -122,10 +123,12 @@ def download_and_unzip_latest_artefact(output_directory: Optional[str] = None) -
     last_run = _get_latest_run(pipeline_id)
 
     # Extract the downloaded artefacts
-    download_and_unzip_artefact(api_client=api_client,
-                                model_id=pipeline.model_id,
-                                model_artefact_id=last_run.artefact_id,
-                                output_dir=output_directory or f"/tmp/{pipeline_id}")
+    download_and_unzip_artefact(
+        api_client=api_client,
+        model_id=pipeline.model_id,
+        model_artefact_id=last_run.artefact_id,
+        output_dir=output_directory or f"/tmp/{pipeline_id}"
+    )
 
     # List the contents for manual verification
     print(glob.glob(f"{output_directory}/*"))
