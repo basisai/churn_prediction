@@ -115,5 +115,5 @@ serve {
         "pip3 install -r requirements-serve.txt",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
-    script = ["python3 serve_grpc.py"]
+    script = [{sh = ["python3 serve_grpc.py"]}]
 }
