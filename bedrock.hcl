@@ -12,7 +12,7 @@ Comprises the following:
 */
 train {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install -r requirements.txt"]
+    install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
     // As we are using Spark, "script" is written in the manner shown below.
     // If Spark is not required, it is just simply:
     // script = [{sh = ["python3 train.py"]}]
@@ -64,7 +64,7 @@ Similar in style as Train stanza
 */
 batch_score {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+    install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
@@ -108,6 +108,6 @@ Only comprises the following:
 */
 serve {
     image = "python:3.7"
-    install = ["pip3 install -r requirements-serve.txt"]
+    install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
     script = [{sh = ["gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --timeout=300 serve_http:app"]}]
 }
