@@ -12,7 +12,7 @@ Comprises the following:
 */
 train {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install -r requirements.txt"]
+    install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
     // As we are using Spark, "script" is written in the manner shown below.
     // If Spark is not required, it is just simply:
     // script = [{sh = ["python3 train.py"]}]
@@ -64,7 +64,7 @@ Similar in style as Train stanza
 */
 batch_score {
     image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+    install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
     script = [
         {spark-submit {
             script = "batch_score.py"
@@ -112,7 +112,7 @@ serve {
     // The second line in "install" is to generate serve_pb2 and serve_pb2_grpc.
     // It requires protos/serve.proto.
     install = [
-        "pip3 install -r requirements-serve.txt",
+        "pip3 install --upgrade pip && pip3 install -r requirements-serve.txt",
         "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
     ]
     script = [{sh = ["python3 serve_grpc.py"]}]
