@@ -1,5 +1,5 @@
 pip==19.2.3
-bdrk==0.1.4
+bdrk==0.1.5
 numpy==1.17.2
 pandas==0.25.1
 lightgbm==2.3.0
