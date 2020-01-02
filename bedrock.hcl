@@ -17,7 +17,9 @@ Comprises the following:
 - [optional] depends_on: a list of names of steps that this run step depends on
 */
 train {
-    step step0 {
+    // We declare a step with a step name. For example, this step is named as "run_spark_job".
+    // A step's name must be unique.
+    step run_spark_job {
         image = "basisai/workload-standard:v0.1.2"
         install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
         // As we are using Spark, "script" is written in the manner shown below.
