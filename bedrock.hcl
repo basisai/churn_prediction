@@ -119,5 +119,9 @@ Only comprises the following:
 serve {
     image = "python:3.7"
     install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
-    script = [{sh = ["gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --timeout=300 serve_http:app"]}]
+    script = [{sh = ["gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 serve_http:app"]}]
+
+    parameters {
+        WORKERS = "2"
+    }
 }
