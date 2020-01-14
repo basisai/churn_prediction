@@ -88,8 +88,8 @@ class PredictionStore:
             yield key
         finally:
             current = getattr(self._scope, "active")
-            self.save(Prediction(**current))
             delattr(self._scope, "active")
+            self.save(Prediction(**current))
 
 
 store = PredictionStore()
