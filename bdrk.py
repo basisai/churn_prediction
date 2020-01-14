@@ -22,8 +22,9 @@ class Prediction:
 class PredictionStore:
     def __init__(self):
         # TODO: replace in memory store with BigQuery
-        self._client = bigquery.Client()
         self._store: MutableMapping[UUID, Prediction] = {}
+        # TODO: Support AWS native storage
+        self._client = bigquery.Client(project="span-staging")
         self._table = self._client.get_table("span-staging.expt_prediction_store.prediction_v1")
         # Assumes gthread and uses thread local storage
         self._scope = threading.local()
@@ -35,14 +36,14 @@ class PredictionStore:
         :param prediction: The completed prediction
         :type prediction: Prediction
         """
-        # self._store[prediction.entity_id] = prediction
         data = asdict(prediction)
-        print(data)
         data["entity_id"] = str(prediction.entity_id)
         # TODO: Supports bytes type which is not json serializable
         errors = self._client.insert_rows(self._table, [data])
-        if errors == []:
-            print("New rows have been added.")
+        if errors:
+            print(f"Error adding row: {errors}")
+        else:
+            print(f"New row added: {data}")
 
     def load(self, key: UUID) -> Prediction:
         """
