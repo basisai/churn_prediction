@@ -6,11 +6,13 @@ import pickle
 import numpy as np
 from flask import Flask, request
 
+import bdrk
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
 
 
+@bdrk.store.activate()
 def predict_prob(subscriber_features,
                  model=pickle.load(open(OUTPUT_MODEL_NAME, "rb"))):
     """Predict churn probability given subscriber_features.
@@ -22,6 +24,8 @@ def predict_prob(subscriber_features,
     Returns:
         churn_prob (float): churn probability
     """
+    bdrk.store.log(requestBody=subscriber_features)
+
     row_feats = list()
     for col in SUBSCRIBER_FEATURES:
         row_feats.append(subscriber_features[col])
@@ -39,12 +43,14 @@ def predict_prob(subscriber_features,
             row_feats.append(0)
 
     # Score
+    bdrk.store.log(features=row_feats)
     churn_prob = (
         model
         .predict_proba(np.array(row_feats).reshape(1, -1))[:, 1]
         .item()
     )
 
+    bdrk.store.log(output=churn_prob)
     return churn_prob
 
 
