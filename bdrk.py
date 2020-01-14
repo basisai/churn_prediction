@@ -2,8 +2,11 @@ import os
 import threading
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from typing import AnyStr, Callable, List, MutableMapping, Optional
 from uuid import UUID, uuid4
+
+from google.cloud import bigquery
 
 
 @dataclass(frozen=True)
@@ -13,12 +16,15 @@ class Prediction:
     requestBody: AnyStr
     output: float
     server_id: str
+    created_at: datetime = datetime.now(tz=timezone.utc)
 
 
 class PredictionStore:
     def __init__(self):
         # TODO: replace in memory store with BigQuery
+        self._client = bigquery.Client()
         self._store: MutableMapping[UUID, Prediction] = {}
+        self._table = self._client.get_table("span-staging.expt_prediction_store.prediction_v1")
         # Assumes gthread and uses thread local storage
         self._scope = threading.local()
 
@@ -30,7 +36,11 @@ class PredictionStore:
         :type prediction: Prediction
         """
         # self._store[prediction.entity_id] = prediction
-        print(asdict(prediction))
+        data = asdict(prediction)
+        print(data)
+        errors = self._client.insert_rows(self._table, [data])
+        if errors == []:
+            print("New rows have been added.")
 
     def load(self, key: UUID) -> Prediction:
         """
@@ -68,7 +78,7 @@ class PredictionStore:
 
         key = uuid4()
         setattr(self._scope, "active", {
-            "server_id": os.getenv["SERVER_ID"],
+            "server_id": os.environ["SERVER_ID"],
             "entity_id": key
         })
 
