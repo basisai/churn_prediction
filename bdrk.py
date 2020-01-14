@@ -1,6 +1,7 @@
+import os
 import threading
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import AnyStr, Callable, List, MutableMapping, Optional
 from uuid import UUID, uuid4
 
@@ -28,7 +29,8 @@ class PredictionStore:
         :param prediction: The completed prediction
         :type prediction: Prediction
         """
-        self._store[prediction.entity_id] = prediction
+        # self._store[prediction.entity_id] = prediction
+        print(asdict(prediction))
 
     def load(self, key: UUID) -> Prediction:
         """

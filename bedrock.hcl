@@ -123,7 +123,7 @@ serve {
     install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
     script = [
         {sh = [
-            "gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 serve_http:app"
+            "gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 --capture-output serve_http:app"
         ]}
     ]
 
