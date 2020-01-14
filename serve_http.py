@@ -12,7 +12,6 @@ from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
 
 
-@bdrk.store.activate()
 def predict_prob(subscriber_features,
                  model=pickle.load(open(OUTPUT_MODEL_NAME, "rb"))):
     """Predict churn probability given subscriber_features.
@@ -24,8 +23,6 @@ def predict_prob(subscriber_features,
     Returns:
         churn_prob (float): churn probability
     """
-    bdrk.store.log(requestBody=subscriber_features)
-
     row_feats = list()
     for col in SUBSCRIBER_FEATURES:
         row_feats.append(subscriber_features[col])
@@ -59,9 +56,10 @@ app = Flask(__name__)
 
 
 @app.route("/", methods=["POST"])
+@bdrk.store.activate()
 def get_churn():
     """Returns the `churn_prob` given the subscriber features"""
-
+    bdrk.store.log(requestBody=request.data.decode("utf-8"))
     subscriber_features = request.json
     result = {
         "churn_prob": predict_prob(subscriber_features)

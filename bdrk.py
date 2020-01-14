@@ -3,7 +3,7 @@ import threading
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import AnyStr, Callable, List, MutableMapping, Optional
+from typing import Callable, List, MutableMapping, Optional
 from uuid import UUID, uuid4
 
 from google.cloud import bigquery
@@ -13,7 +13,7 @@ from google.cloud import bigquery
 class Prediction:
     entity_id: UUID
     features: List[float]
-    requestBody: AnyStr
+    requestBody: str
     output: float
     server_id: str
     created_at: datetime = datetime.now(tz=timezone.utc)
@@ -38,6 +38,8 @@ class PredictionStore:
         # self._store[prediction.entity_id] = prediction
         data = asdict(prediction)
         print(data)
+        data["entity_id"] = str(prediction.entity_id)
+        # TODO: Supports bytes type which is not json serializable
         errors = self._client.insert_rows(self._table, [data])
         if errors == []:
             print("New rows have been added.")
