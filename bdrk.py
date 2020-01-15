@@ -1,6 +1,7 @@
 import os
 import threading
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Callable, List, MutableMapping, Optional
@@ -24,10 +25,10 @@ class PredictionStore:
         # TODO: replace in memory store with BigQuery
         self._store: MutableMapping[UUID, Prediction] = {}
         # TODO: Support AWS native storage
-        self._client = bigquery.Client(project="span-staging")
+        self._client = bigquery.Client()
         self._table = self._client.get_table("span-staging.expt_prediction_store.prediction_v1")
-        # Assumes gthread and uses thread local storage
-        self._scope = threading.local()
+        # Uses context var to handle context between multiple web handlers
+        self._scope = ContextVar("scope")
 
     def save(self, prediction: Prediction):
         """
@@ -62,10 +63,8 @@ class PredictionStore:
 
         :raises RuntimeError: When no active scope is available.
         """
-        if not hasattr(self._scope, "active"):
-            raise RuntimeError("No active scope available")
-        current = getattr(self._scope, "active")
-        current.update(**kwargs)
+        active = self._scope.get()
+        active.update(**kwargs)
 
     @contextmanager
     def activate(self) -> UUID:
@@ -76,11 +75,8 @@ class PredictionStore:
         :yield: The prediction ID of the active scope
         :rtype: UUID
         """
-        if hasattr(self._scope, "active"):
-            raise RuntimeError("An active scope already exists")
-
         key = uuid4()
-        setattr(self._scope, "active", {
+        token = self._scope.set({
             "server_id": os.environ["SERVER_ID"],
             "entity_id": key
         })
@@ -88,9 +84,9 @@ class PredictionStore:
         try:
             yield key
         finally:
-            current = getattr(self._scope, "active")
-            delattr(self._scope, "active")
-            self.save(Prediction(**current))
+            active = self._scope.get()
+            self._scope.reset(token)
+            self.save(Prediction(**active))
 
 
 store = PredictionStore()
