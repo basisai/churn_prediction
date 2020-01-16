@@ -19,7 +19,7 @@ Comprises the following:
 train {
     // We declare a step with a step name. For example, this step is named as "run_spark_job".
     // A step's name must be unique.
-    step run_spark_job {
+    step spark {
         image = "basisai/workload-standard:v0.1.2"
         install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
         // As we are using Spark, "script" is written in the manner shown below.
@@ -47,6 +47,11 @@ train {
                 }
             }}
         ]
+
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
     }
 
     parameters {
@@ -73,31 +78,38 @@ Batch score stanza
 Similar in style as Train stanza
 */
 batch_score {
-    image = "basisai/workload-standard:v0.1.2"
-    install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
-    script = [
-        {spark-submit {
-            script = "batch_score.py"
-            // to be passed in as --conf key=value
-            conf {
-                spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
-                spark.kubernetes.pyspark.pythonVersion = "3"
-                spark.driver.memory = "4g"
-                spark.driver.cores = "2"
-                spark.executor.instances = "2"
-                spark.executor.memory = "4g"
-                spark.executor.cores = "2"
-                spark.memory.fraction = "0.5"
-                spark.sql.parquet.compression.codec = "gzip"
-                spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-                spark.hadoop.google.cloud.auth.service.account.enable = "true"
-            }
-            // to be passed in as --key=value
-            settings {
-                jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
-            }
-        }}
-    ]
+    step spark {
+        image = "basisai/workload-standard:v0.1.2"
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+        script = [
+            {spark-submit {
+                script = "batch_score.py"
+                // to be passed in as --conf key=value
+                conf {
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.pyspark.pythonVersion = "3"
+                    spark.driver.memory = "4g"
+                    spark.driver.cores = "2"
+                    spark.executor.instances = "2"
+                    spark.executor.memory = "4g"
+                    spark.executor.cores = "2"
+                    spark.memory.fraction = "0.5"
+                    spark.sql.parquet.compression.codec = "gzip"
+                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                }
+                // to be passed in as --key=value
+                settings {
+                    jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
+                }
+            }}
+        ]
+
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
+    }
 
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
@@ -119,5 +131,13 @@ Only comprises the following:
 serve {
     image = "python:3.7"
     install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
-    script = [{sh = ["gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --timeout=300 serve_http:app"]}]
+    script = [
+        {sh = [
+            "gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 serve_http:app"
+        ]}
+    ]
+
+    parameters {
+        WORKERS = "2"
+    }
 }
