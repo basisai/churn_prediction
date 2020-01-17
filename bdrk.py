@@ -10,7 +10,6 @@ from uuid import UUID, uuid4
 import requests
 from google.cloud import bigquery
 from prometheus_client import Histogram
-from prometheus_client.utils import INF
 
 
 @dataclass(frozen=True)
@@ -35,15 +34,16 @@ class PredictionStore:
         # TODO: fetch tracked features from run metrics
         self._tracked = {"very_important_feature_0": [5.0, 10.0, 15.0]}
         # Load feature vector bins
-        self._histogram = [
-            Histogram(
+        self._histogram = {
+            name: Histogram(
                 name=f"model_feature_{name}_value",
                 documentation=f"Serving time values for model feature: {name}",
-                labelnames=("server_id"),
-                buckets=tuple(bins + [INF]),
+                # Only need to label by server / endpoint id when using pushgateway
+                # labelnames=("server_id"),
+                buckets=tuple(bins),
             )
             for name, bins in self._tracked.items()
-        ]
+        }
 
     def save(self, prediction: Prediction):
         """
@@ -65,7 +65,7 @@ class PredictionStore:
         for name, _ in self._tracked.items():
             index = int(name.split("_")[-1])
             value = prediction.features[index]
-            self._histogram[index].labels(server_id=os.environ["SERVER_ID"]).observe(value)
+            self._histogram[name].observe(value)
 
 
     def load(self, key: UUID) -> Prediction:
