@@ -39,10 +39,10 @@ class PredictionStore:
             Histogram(
                 name=f"model_feature_{name}_value",
                 documentation=f"Serving time values for model feature: {name}",
-                buckets=tuple(bins + [INF])
                 labelnames=("server_id"),
+                buckets=tuple(bins + [INF]),
             )
-            for name, bins in tracked.items()
+            for name, bins in self._tracked.items()
         ]
 
     def save(self, prediction: Prediction):
