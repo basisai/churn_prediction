@@ -7,7 +7,10 @@ from datetime import datetime, timezone
 from typing import Callable, List, MutableMapping, Optional
 from uuid import UUID, uuid4
 
+import requests
 from google.cloud import bigquery
+from prometheus_client import Histogram
+from prometheus_client.utils import INF
 
 
 @dataclass(frozen=True)
@@ -29,6 +32,18 @@ class PredictionStore:
         self._table = self._client.get_table("span-staging.expt_prediction_store.prediction_v1")
         # Uses context var to handle context between multiple web handlers
         self._scope = ContextVar("scope")
+        # TODO: fetch tracked features from run metrics
+        self._tracked = {"very_important_feature_0": [5.0, 10.0, 15.0]}
+        # Load feature vector bins
+        self._histogram = [
+            Histogram(
+                name=f"model_feature_{name}_value",
+                documentation=f"Serving time values for model feature: {name}",
+                buckets=tuple(bins + [INF])
+                labelnames=("server_id"),
+            )
+            for name, bins in tracked.items()
+        ]
 
     def save(self, prediction: Prediction):
         """
@@ -45,6 +60,13 @@ class PredictionStore:
             print(f"Error adding row: {errors}")
         else:
             print(f"New row added: {data}")
+
+        # Export feature value for scraping
+        for name, _ in self._tracked.items():
+            index = int(name.split("_")[-1])
+            value = prediction.features[index]
+            self._histogram[index].labels(server_id=os.environ["SERVER_ID"]).observe(value)
+
 
     def load(self, key: UUID) -> Prediction:
         """
@@ -110,3 +132,31 @@ def track(func: Callable) -> Callable:
             return resp
 
     return wrapper
+
+
+def log_feature_histogram(index: int, bins: List[float], name: Optional[str] = None):
+    """
+    Logs the histogram bins for a feature at the specified index of the feature vector. If no name
+    is specified, a default value of feature_{index} will be used.
+
+    :param index: Index of the logged feature in the feature vector
+    :type index: int
+    :param bins: The upperbound of each bin in ascending order
+    :type bins: List[float]
+    :param name: An optional feature name for visualization
+    :type name: Optional[str]
+    """
+    if len(bins) > 10:
+        raise RuntimeError("Bin size cannot be more than 10")
+
+    # Calls run metric api internally for now
+    domain = os.environ.get("BEDROCK_API_DOMAIN", "https://api.bdrk.ai")
+    headers = {
+        "X-Bedrock-Api-Token": os.environ["BEDROCK_API_TOKEN"]
+    }
+    data = {
+        "key": f"{name or 'feature'}_{index}",
+        "value": ",".join(bins)
+    }
+    with requests.post(f"{domain}/internal/run/metrics", data=data, headers=headers) as resp:
+        print(resp)

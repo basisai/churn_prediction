@@ -5,12 +5,13 @@ import logging
 import os
 import pickle
 
-from bedrock_client.bedrock.api import BedrockApi
 import lightgbm as lgb
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from pyspark.sql import SparkSession
 
+import bdrk
+from bedrock_client.bedrock.api import BedrockApi
+from pyspark.sql import SparkSession
 from utils.constants import FEATURE_COLS, TARGET_COL
 from utils.preprocess import generate_features
 
@@ -40,6 +41,9 @@ def compute_log_metrics(gbm, x_val, y_val):
 
     # Log metrics
     bedrock = BedrockApi(logging.getLogger(__name__))
+    # It's up to DS to pick good bins for their feature. One way is to select the top and bottom 1%
+    # and linearly interpolate the intervals with a maximum number of 10 bins.
+    bdrk.log_feature_histogram(index=2, bins=[5.0, 10.0, 15.0], name="very_important_feature")
     bedrock.log_metric("Accuracy", acc)
     bedrock.log_metric("Precision", precision)
     bedrock.log_metric("Recall", recall)
