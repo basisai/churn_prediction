@@ -156,7 +156,7 @@ def log_feature_histogram(index: int, bins: List[float], name: Optional[str] = N
     }
     data = {
         "key": f"{name or 'feature'}_{index}",
-        "value": ",".join(bins)
+        "value": ",".join(map(str, bins))
     }
     with requests.post(f"{domain}/internal/run/metrics", data=data, headers=headers) as resp:
         print(resp)
