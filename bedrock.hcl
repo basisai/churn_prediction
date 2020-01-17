@@ -130,5 +130,6 @@ serve {
     parameters {
         WORKERS = "2"
         SERVER_ID = "expt-model"
+        prometheus_multiproc_dir = "/tmp"
     }
 }
