@@ -47,6 +47,11 @@ train {
                 }
             }}
         ]
+
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
     }
 
     parameters {
@@ -99,6 +104,11 @@ batch_score {
                 }
             }}
         ]
+
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
     }
 
     parameters {
