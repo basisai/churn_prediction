@@ -8,7 +8,7 @@ from typing import Callable, List, MutableMapping, Optional
 from uuid import UUID, uuid4
 
 import requests
-from google.cloud import bigquery
+from fluent.asyncsender import FluentSender
 from prometheus_client import Histogram
 
 
@@ -24,11 +24,15 @@ class Prediction:
 
 class PredictionStore:
     def __init__(self):
-        # TODO: replace in memory store with BigQuery
-        self._store: MutableMapping[UUID, Prediction] = {}
         # TODO: Support AWS native storage
-        self._client = bigquery.Client()
-        self._table = self._client.get_table("span-staging.expt_prediction_store.prediction_v1")
+        endpoint_id = os.environ["ENDPOINT_ID"]
+        pod_name = os.environ["POD_NAME"]
+        fluentd_server = os.environ.get("FLUENTD_SERVER", "localhost")
+        self._sender: FluentSender = FluentSender(
+            tag=f"models.predictions.{endpoint_id}.{pod_name}",
+            host=fluentd_server,
+            queue_circular=True
+        )
         # Uses context var to handle context between multiple web handlers
         self._scope = ContextVar("scope")
         # TODO: fetch tracked features from run metrics
@@ -55,12 +59,7 @@ class PredictionStore:
         data = asdict(prediction)
         data["entity_id"] = str(prediction.entity_id)
         # TODO: Supports bytes type which is not json serializable
-        errors = self._client.insert_rows(self._table, [data])
-        if errors:
-            print(f"Error adding row: {errors}")
-        else:
-            print(f"New row added: {data}")
-
+        self._sender.emit(label=None, data=data)
         # Export feature value for scraping
         for name, _ in self._tracked.items():
             index = int(name.split("_")[-1])
@@ -77,7 +76,8 @@ class PredictionStore:
         :return: The past prediction.
         :rtype: Prediction
         """
-        return self._store[key]
+        # TODO: Implement lookup of predictions by id
+        raise NotImplementedError
 
     def log(self, **kwargs):
         """
