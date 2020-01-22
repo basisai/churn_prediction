@@ -140,6 +140,9 @@ serve {
     parameters {
         WORKERS = "2"
         SERVER_ID = "expt-model"
+        ENDPOINT_ID = "expt-endpoint"
+        POD_NAME = "expt-pod"
+        FLUENTD_SERVER = "localhost"
         prometheus_multiproc_dir = "/tmp"
     }
 }
