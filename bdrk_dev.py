@@ -25,9 +25,9 @@ class Prediction:
 class PredictionStore:
     def __init__(self):
         # TODO: Support AWS native storage
-        endpoint_id = os.environ["ENDPOINT_ID"]
-        pod_name = os.environ["POD_NAME"]
-        fluentd_server = os.environ.get("FLUENTD_SERVER", "localhost")
+        endpoint_id = os.environ.get("ENDPOINT_ID", "local-endpoint")
+        pod_name = os.environ.get("POD_NAME", "local-pod")
+        fluentd_server = os.environ.get("FLUENTD_SERVER", "fluentd-service")
         self._sender: FluentSender = FluentSender(
             tag=f"models.predictions.{endpoint_id}.{pod_name}",
             host=fluentd_server,
@@ -101,7 +101,7 @@ class PredictionStore:
         """
         key = uuid4()
         token = self._scope.set({
-            "server_id": os.environ["SERVER_ID"],
+            "server_id": os.environ.get("SERVER_ID", "local-server"),
             "entity_id": key
         })
 
