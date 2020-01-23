@@ -58,8 +58,10 @@ class PredictionStore:
         """
         data = asdict(prediction)
         data["entity_id"] = str(prediction.entity_id)
+        # fluentd's msgpack version does not yet support serializing datetime
+        data["created_at"] = int(prediction.created_at.timestamp())
         # TODO: Supports bytes type which is not json serializable
-        self._sender.emit(label=None, data=data)
+        self._sender.emit_with_time(label=None, timestamp=data["created_at"], data=data)
         # Export feature value for scraping
         for name, _ in self._tracked.items():
             index = int(name.split("_")[-1])
