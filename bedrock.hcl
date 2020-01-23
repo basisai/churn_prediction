@@ -130,7 +130,10 @@ Only comprises the following:
 */
 serve {
     image = "python:3.7"
-    install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
+    install = [
+        "apt-get update && apt-get install -y cmake",
+        "pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"
+    ]
     script = [
         {sh = [
             "gunicorn --bind=:${SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 --capture-output serve_http:app"
