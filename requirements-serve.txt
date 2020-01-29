@@ -2,3 +2,4 @@ numpy==1.17.2
 lightgbm==2.3.0
 flask==1.1.1
 gunicorn==19.9.0
+fluent-logger==0.9.4

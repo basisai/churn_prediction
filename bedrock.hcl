@@ -139,7 +139,7 @@ serve {
     install = [
         "apt-get update && apt-get install -y cmake",
         "pip3 install --upgrade pip && pip3 install -r requirements-serve.txt",
-        "pip3 install --index-url https://test.pypi.org/simple/ bdrk"
+        "pip3 install --index-url https://test.pypi.org/simple/ bdrk[prediction-store]"
     ]
     script = [
         {sh = [
