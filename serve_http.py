@@ -5,13 +5,13 @@ import json
 import pickle
 
 import numpy as np
+from bedrock_client.bedrock.prediction_store import PredictionStore
 from flask import Flask, request
 
-from bedrock_client.bedrock.prediction_store import PredictionStore
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
-prediction_store = PredictionStore()
+PREDICTION_STORE = PredictionStore()
 
 
 def predict_prob(subscriber_features,
@@ -49,7 +49,11 @@ def predict_prob(subscriber_features,
     )
 
     # Log the prediction
-    prediction_store.log_prediction(request_body=json.dumps(subscriber_features), features=row_feats, output=churn_prob)
+    PREDICTION_STORE.log_prediction(
+        request_body=json.dumps(subscriber_features),
+        features=row_feats,
+        output=churn_prob
+    )
 
     return churn_prob
 
