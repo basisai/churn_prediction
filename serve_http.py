@@ -1,14 +1,17 @@
 """
 Script for serving.
 """
+import json
 import pickle
 
 import numpy as np
 from flask import Flask, request
 
+from bedrock_client.bedrock.prediction_store import PredictionStore
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
+prediction_store = PredictionStore()
 
 
 def predict_prob(subscriber_features,
@@ -44,6 +47,9 @@ def predict_prob(subscriber_features,
         .predict_proba(np.array(row_feats).reshape(1, -1))[:, 1]
         .item()
     )
+
+    # Log the prediction
+    prediction_store.log_prediction(request_body=json.dumps(subscriber_features), features=row_feats, output=churn_prob)
 
     return churn_prob
 
