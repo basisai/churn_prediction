@@ -6,14 +6,14 @@ import os
 import pickle
 
 from bedrock_client.bedrock.api import BedrockApi
+import pandas as pd
 import lightgbm as lgb
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from pyspark.sql import SparkSession
 
 from utils.constants import FEATURE_COLS, TARGET_COL
-from utils.preprocess import generate_features
 
+FEATURES_DATA = os.getenv("FEATURES_DATA")
 LR = float(os.getenv("LR"))
 NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
 N_ESTIMATORS = int(os.getenv("N_ESTIMATORS"))
@@ -52,10 +52,7 @@ def compute_log_metrics(gbm, x_val, y_val):
 
 def main():
     """Train pipeline"""
-    print("\tGenerating features")
-    with SparkSession.builder.appName("FeatureGeneration").getOrCreate() as spark:
-        spark.sparkContext.setLogLevel("FATAL")
-        model_data = generate_features(spark).toPandas()
+    model_data = pd.read_csv(FEATURES_DATA)
 
     print("\tSplitting train and validation data")
     x_train, x_val, y_train, y_val = train_test_split(
@@ -63,7 +60,6 @@ def main():
         model_data[TARGET_COL],
         test_size=0.2,
     )
-
     print("\tTrain model")
     gbm = lgb.LGBMClassifier(
         num_leaves=NUM_LEAVES,

@@ -17,9 +17,9 @@ Comprises the following:
 - [optional] depends_on: a list of names of steps that this run step depends on
 */
 train {
-    // We declare a step with a step name. For example, this step is named as "run_spark_job".
+    // We declare a step with a step name. For example, this step is named as "preprocess".
     // A step's name must be unique.
-    step spark {
+    step preprocess {
         image = "basisai/workload-standard:v0.1.2"
         install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
         // As we are using Spark, "script" is written in the manner shown below.
@@ -27,7 +27,7 @@ train {
         // script = [{sh = ["python3 train.py"]}]
         script = [
             {spark-submit {
-                script = "train.py"
+                script = "preprocess.py"
                 // to be passed in as --conf key=value
                 conf {
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
@@ -47,16 +47,56 @@ train {
                 }
             }}
         ]
-
         resources {
             cpu = "0.5"
             memory = "1G"
         }
     }
 
+    step generate_features {
+        image = "basisai/workload-standard:v0.1.2"
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        script = [
+            {spark-submit {
+                script = "generate_features.py"
+                conf {
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.pyspark.pythonVersion = "3"
+                    spark.driver.memory = "4g"
+                    spark.driver.cores = "2"
+                    spark.executor.instances = "2"
+                    spark.executor.memory = "4g"
+                    spark.executor.cores = "2"
+                    spark.memory.fraction = "0.5"
+                    spark.sql.parquet.compression.codec = "gzip"
+                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                }
+            }}
+        ]
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
+        depends_on = ["preprocess"]
+    }
+
+    step train {
+        image = "basisai/workload-standard:v0.1.2"
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        script = [{sh = ["python3 train.py"]}]
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
+        depends_on = ["generate_features"]
+    }
+
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
+        PREPROCESSED_DATA = "gs://span-artefacts-production/churn_data/preprocessed"
+        FEATURES_DATA = "gs://span-artefacts-production/churn_data/features.csv"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "150"
@@ -78,13 +118,12 @@ Batch score stanza
 Similar in style as Train stanza
 */
 batch_score {
-    step spark {
+    step preprocess {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
         script = [
             {spark-submit {
-                script = "batch_score.py"
-                // to be passed in as --conf key=value
+                script = "preprocess.py"
                 conf {
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
                     spark.kubernetes.pyspark.pythonVersion = "3"
@@ -98,22 +137,58 @@ batch_score {
                     spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
                     spark.hadoop.google.cloud.auth.service.account.enable = "true"
                 }
-                // to be passed in as --key=value
-                settings {
-                    jars = "gs://spark-lib/bigquery/spark-bigquery-latest.jar"
-                }
             }}
         ]
-
         resources {
             cpu = "0.5"
             memory = "1G"
         }
     }
 
+    step generate_features {
+        image = "basisai/workload-standard:v0.1.2"
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        script = [
+            {spark-submit {
+                script = "generate_features.py"
+                conf {
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.pyspark.pythonVersion = "3"
+                    spark.driver.memory = "4g"
+                    spark.driver.cores = "2"
+                    spark.executor.instances = "2"
+                    spark.executor.memory = "4g"
+                    spark.executor.cores = "2"
+                    spark.memory.fraction = "0.5"
+                    spark.sql.parquet.compression.codec = "gzip"
+                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                }
+            }}
+        ]
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
+        depends_on = ["preprocess"]
+    }
+
+    step train {
+        image = "basisai/workload-standard:v0.1.2"
+        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+        script = [{sh = ["python3 batch_score.py"]}]
+        resources {
+            cpu = "0.5"
+            memory = "1G"
+        }
+        depends_on = ["generate_features"]
+    }
+
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
+        PREPROCESSED_DATA = "gs://span-artefacts-production/churn_data/preprocessed"
+        FEATURES_DATA = "gs://span-artefacts-production/churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
         BIGQUERY_DATASET = "churn"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"

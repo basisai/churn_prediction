@@ -77,3 +77,5 @@ FEATURE_COLS = SUBSCRIBER_FEATURES + \
     [f"State_{state}" for state in STATES]
 
 TARGET_COL = "Churn"
+
+USER_COL = "User_id"
