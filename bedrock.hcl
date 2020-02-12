@@ -5,7 +5,7 @@ version = "1.0"
 Train stanza
 Comprises the following:
 - [required] step: training steps to be run. Multiple steps are allowed but must have different names
-- [optional] parameters: any environment variables used by the script for convenience
+- [optional] parameters: environment variables used by the script. They can be overwritten when you create a run.
 - [optional] secrets: the names of the secrets necessary to run the script successfully
 
 Step stanza
