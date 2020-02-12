@@ -8,7 +8,8 @@ import pandas as pd
 
 from utils.constants import FEATURE_COLS
 
-FEATURES_DATA = os.getenv("FEATURES_DATA")
+TEMP_DATA_BUCKET = os.getenv("TEMP_DATA_BUCKET")
+FEATURES_DATA = TEMP_DATA_BUCKET + os.getenv("FEATURES_DATA")
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
 BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")

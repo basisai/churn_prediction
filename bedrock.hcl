@@ -95,8 +95,9 @@ train {
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        PREPROCESSED_DATA = "gs://span-artefacts-production/churn_data/preprocessed"
-        FEATURES_DATA = "gs://span-artefacts-production/churn_data/features.csv"
+        TEMP_DATA_BUCKET = "gs://span-artefacts-production"
+        PREPROCESSED_DATA = "/churn_data/preprocessed"
+        FEATURES_DATA = "/churn_data/features.csv"
         LR = "0.05"
         NUM_LEAVES = "10"
         N_ESTIMATORS = "150"
@@ -187,8 +188,9 @@ batch_score {
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        PREPROCESSED_DATA = "gs://span-artefacts-production/churn_data/preprocessed"
-        FEATURES_DATA = "gs://span-artefacts-production/churn_data/features.csv"
+        TEMP_DATA_BUCKET = "gs://span-artefacts-production"
+        PREPROCESSED_DATA = "/churn_data/preprocessed"
+        FEATURES_DATA = "/churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
         BIGQUERY_DATASET = "churn"
         DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"

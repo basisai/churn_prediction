@@ -7,7 +7,8 @@ from pyspark.sql import functions as F
 
 RAW_SUBSCRIBERS_DATA = os.getenv("RAW_SUBSCRIBERS_DATA")
 RAW_CALLS_DATA = os.getenv("RAW_CALLS_DATA")
-PREPROCESSED_DATA = os.getenv("PREPROCESSED_DATA")
+TEMP_DATA_BUCKET = os.getenv("TEMP_DATA_BUCKET")
+PREPROCESSED_DATA = TEMP_DATA_BUCKET + os.getenv("PREPROCESSED_DATA")
 
 
 def preprocess_subscriber(spark):
