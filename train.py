@@ -11,9 +11,10 @@ import lightgbm as lgb
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
+from utils.helper import get_temp_data_bucket
 from utils.constants import FEATURE_COLS, TARGET_COL
 
-TEMP_DATA_BUCKET = os.getenv("TEMP_DATA_BUCKET")
+TEMP_DATA_BUCKET = get_temp_data_bucket()
 FEATURES_DATA = TEMP_DATA_BUCKET + os.getenv("FEATURES_DATA")
 LR = float(os.getenv("LR"))
 NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
