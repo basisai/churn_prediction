@@ -174,7 +174,7 @@ batch_score {
         depends_on = ["preprocess"]
     }
 
-    step train {
+    step batch_score {
         image = "basisai/workload-standard:v0.1.2"
         install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
         script = [{sh = ["python3 batch_score.py"]}]
