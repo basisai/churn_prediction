@@ -95,7 +95,7 @@ train {
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "gs://span-artefacts-production/"
+        TEMP_DATA_BUCKET = "gs://span-temp-production/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         LR = "0.05"
@@ -188,7 +188,7 @@ batch_score {
     parameters {
         RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
         RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "gs://span-artefacts-production/"
+        TEMP_DATA_BUCKET = "gs://span-temp-production/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
