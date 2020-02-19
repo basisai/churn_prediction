@@ -72,7 +72,7 @@ def main():
     compute_log_metrics(gbm, x_val, y_val)
 
     print("\tSaving model")
-    with open("/artefact/" + OUTPUT_MODEL_NAME, "wb") as model_file:
+    with open("/artefact/train/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
 
 

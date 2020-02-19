@@ -11,7 +11,7 @@ See [notebook](./doc/churn_prediction.ipynb)
 ![flowchart](./doc/flow.png)
 
 ### Run on Bedrock
-Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run. When you create a run, overwrite these default parameters.
+Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run. When you create a run, overwrite these default values.
 
 Name | Default value | Description
 --- | --- | ---
