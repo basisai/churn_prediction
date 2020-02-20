@@ -4,12 +4,13 @@ Script to perform batch scoring.
 import os
 import pickle
 import time
+import pandas as pd
 
-from pyspark.sql import SparkSession
-
+from utils.helper import get_temp_data_bucket
 from utils.constants import FEATURE_COLS
-from utils.preprocess import generate_features
 
+TEMP_DATA_BUCKET = get_temp_data_bucket()
+FEATURES_DATA = TEMP_DATA_BUCKET + os.getenv("FEATURES_DATA")
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
 BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
@@ -18,24 +19,20 @@ DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
 
 def main():
     """Batch scoring pipeline"""
-    with SparkSession.builder.appName("BatchScoring").getOrCreate() as spark:
-        spark.sparkContext.setLogLevel("FATAL")
-
-        start = time.time()
-        print("\tLoading active subscribers")
-        subscriber_df = generate_features(spark)
-        subscriber_pd_df = (
-            subscriber_df
-            .filter(subscriber_df["Churn"] == 0)
-            .drop("Churn")
-            .toPandas()
-        )
-        print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
-        print("\tNumber of active subscribers = {}"
-              .format(subscriber_pd_df.shape[0]))
+    start = time.time()
+    print("\tLoading active subscribers")
+    subscriber_df = pd.read_csv(FEATURES_DATA)
+    subscriber_pd_df = (
+        subscriber_df
+        .query("Churn==0")
+        .drop(columns=["Churn"])
+    )
+    print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
+    print("\tNumber of active subscribers = {}"
+            .format(len(subscriber_pd_df)))
 
     print("\tLoading model")
-    with open("/artefact/" + OUTPUT_MODEL_NAME, "rb") as model_file:
+    with open("/artefact/train/" + OUTPUT_MODEL_NAME, "rb") as model_file:
         gbm = pickle.load(model_file)
 
     print("\tScoring")

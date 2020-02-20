@@ -8,7 +8,7 @@ from flask import Flask, request
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
-OUTPUT_MODEL_NAME = "/artefact/lgb_model.pkl"
+OUTPUT_MODEL_NAME = "/artefact/train/lgb_model.pkl"
 
 
 def predict_prob(subscriber_features,
