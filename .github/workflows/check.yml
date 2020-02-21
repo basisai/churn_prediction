@@ -21,4 +21,4 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Checking for security vulnerabilities in Python packages
         run: |
-          safety check -r requirements.txt -r requirements-serve.txt
+          safety check -r requirements.txt -r requirements-serve.txt --full-report
