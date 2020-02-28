@@ -88,6 +88,7 @@ train {
         resources {
             cpu = "0.5"
             memory = "1G"
+            // gpu = "1"  // uncomment this in order to use GPU. Only integer values are allowed.
         }
         depends_on = ["generate_features"]
     }
