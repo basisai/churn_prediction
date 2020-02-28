@@ -1,6 +1,6 @@
-numpy==1.17.2
-lightgbm==2.3.0
-scikit-learn==0.21.3
+numpy==1.18.1
+lightgbm==2.3.1
+scikit-learn==0.22.1
 aiohttp==3.6.2
 protobuf==3.10.0
 grpcio==1.24.1
