@@ -2,12 +2,15 @@
 Script to preprocess subscribers.
 """
 import os
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
-from .constants import AREA_CODES, STATES, FEATURE_COLS, TARGET_COL
+from utils.helper import get_temp_data_bucket
 
 RAW_SUBSCRIBERS_DATA = os.getenv("RAW_SUBSCRIBERS_DATA")
 RAW_CALLS_DATA = os.getenv("RAW_CALLS_DATA")
+TEMP_DATA_BUCKET = get_temp_data_bucket()
+PREPROCESSED_DATA = TEMP_DATA_BUCKET + os.getenv("PREPROCESSED_DATA")
 
 
 def preprocess_subscriber(spark):
@@ -34,20 +37,14 @@ def preprocess_subscriber(spark):
     return joined_df
 
 
-def generate_features(spark):
-    """Generate features."""
-    joined_df = preprocess_subscriber(spark)
-    for area_code in AREA_CODES:
-        joined_df = joined_df.withColumn(
-            "Area_Code_{}".format(area_code),
-            F.when(F.col("Area_Code") == area_code, 1).otherwise(0)
-        )
+def main():
+    """Preprocess data"""
+    print("\tPreprocessing")
+    with SparkSession.builder.appName("Preprocessing").getOrCreate() as spark:
+        spark.sparkContext.setLogLevel("FATAL")
+        preprocessed_df = preprocess_subscriber(spark)
+        preprocessed_df.repartition(1).write.mode("overwrite").parquet(PREPROCESSED_DATA)
 
-    for state in STATES:
-        joined_df = joined_df.withColumn(
-            "State_{}".format(state),
-            F.when(F.col("State") == state, 1).otherwise(0)
-        )
 
-    joined_df = joined_df.select(FEATURE_COLS + [TARGET_COL])
-    return joined_df
+if __name__ == "__main__":
+    main()
