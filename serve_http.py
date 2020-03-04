@@ -1,14 +1,33 @@
 """
 Script for serving.
 """
+import os
 import pickle
 
 import numpy as np
-from flask import Flask, request
+from flask import Flask, request, Response
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    CollectorRegistry,
+    Histogram,
+    generate_latest
+)
+from prometheus_client.multiprocess import MultiProcessCollector
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/train/lgb_model.pkl"
+
+REGISTRY = CollectorRegistry()
+MultiProcessCollector(REGISTRY)
+FEATURE_HISTOGRAM = [
+    Histogram(
+        name=f"feature_{i}_value",
+        documentation=f"Real time values for feature index: {i}",
+        buckets=tuple(float(b) for b in os.getenv(
+            "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
+    ) for i in range(int(os.getenv("FEATURE_TOP_N", "5")))
+]
 
 
 def predict_prob(subscriber_features,
@@ -38,6 +57,11 @@ def predict_prob(subscriber_features,
         else:
             row_feats.append(0)
 
+    for j, histogram in enumerate(FEATURE_HISTOGRAM):
+        if j >= len(row_feats):
+            break
+        histogram.observe(row_feats[j] or 0)
+
     # Score
     churn_prob = (
         model
@@ -61,6 +85,17 @@ def get_churn():
         "churn_prob": predict_prob(subscriber_features)
     }
     return result
+
+
+@app.route("/stats/prometheus", methods=["GET"])
+def get_stats():
+    """Returns real time feature values recorded by prometheus
+    """
+    data = generate_latest(REGISTRY)
+    resp = Response(data)
+    resp.headers['Content-Type'] = CONTENT_TYPE_LATEST
+    resp.headers['Content-Length'] = str(len(data))
+    return resp
 
 
 def main():
