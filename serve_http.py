@@ -87,8 +87,8 @@ def get_churn():
     return result
 
 
-@app.route("/stats/prometheus", methods=["GET"])
-def get_stats():
+@app.route("/metrics", methods=["GET"])
+def get_metrics():
     """Returns real time feature values recorded by prometheus
     """
     data = generate_latest(REGISTRY)
