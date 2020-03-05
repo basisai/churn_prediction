@@ -211,12 +211,13 @@ serve {
     install = ["pip3 install --upgrade pip && pip3 install -r requirements-serve.txt"]
     script = [
         {sh = [
-            "gunicorn --bind=:${BEDROCK_SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 serve_http:app"
+            "gunicorn --config gunicorn_config.py --bind=:${BEDROCK_SERVER_PORT} --worker-class=gthread --workers=${WORKERS} --timeout=300 serve_http:app"
         ]}
     ]
 
     parameters {
         WORKERS = "2"
+        FEATURE_TOP_N = "100"
         prometheus_multiproc_dir = "/tmp"
     }
 }
