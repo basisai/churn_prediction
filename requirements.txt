@@ -8,3 +8,4 @@ fastparquet==0.3.3
 gcsfs==0.6.0
 google-cloud==0.34.0
 google-cloud-bigquery[pandas]==1.20.0
+prometheus_client==0.7.1

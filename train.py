@@ -8,6 +8,7 @@ import pickle
 from bedrock_client.bedrock.api import BedrockApi
 import pandas as pd
 import lightgbm as lgb
+from prometheus_client import Histogram, generate_latest
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
@@ -69,6 +70,20 @@ def main():
         n_estimators=N_ESTIMATORS,
     )
     gbm.fit(x_train, y_train)
+
+    metrics = [
+        Histogram(
+            name=f"feature_{i}_value",
+            documentation=f"Real time values for feature index: {i}",
+            buckets=tuple(float(b) for b in os.getenv(
+                "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
+        ) for i in range(len(x_train[0]))
+    ]
+    for row in x_train:
+        for i, col in enumerate(row):
+            metrics[i].observe(col)
+    print(generate_latest())
+
     compute_log_metrics(gbm, x_val, y_val)
 
     print("\tSaving model")
