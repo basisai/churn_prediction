@@ -77,11 +77,11 @@ def main():
             documentation=f"Real time values for feature index: {i}",
             buckets=tuple(float(b) for b in os.getenv(
                 "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-        ) for i in range(len(x_train[0]))
+        ) for i in range(len(FEATURE_COLS))
     ]
     for row in x_train:
         for i, col in enumerate(row):
-            metrics[i].observe(col)
+            metrics[i].observe(col or 0)
     print(generate_latest())
 
     compute_log_metrics(gbm, x_val, y_val)
