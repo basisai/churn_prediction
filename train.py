@@ -81,7 +81,7 @@ def main():
     ]
     for row in x_train:
         for i, col in enumerate(row):
-            metrics[i].observe(col or 0)
+            metrics[i].observe(col if isinstance(col, float) else 0)
     print(generate_latest())
 
     compute_log_metrics(gbm, x_val, y_val)
