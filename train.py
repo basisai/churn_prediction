@@ -13,7 +13,7 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
 from utils.helper import get_temp_data_bucket
-from utils.constants import FEATURE_COLS, TARGET_COL
+from utils.constants import FEATURE_COLS, SUBSCRIBER_FEATURES, TARGET_COL
 
 TEMP_DATA_BUCKET = get_temp_data_bucket()
 FEATURES_DATA = TEMP_DATA_BUCKET + os.getenv("FEATURES_DATA")
@@ -71,17 +71,15 @@ def main():
     )
     gbm.fit(x_train, y_train)
 
-    metrics = [
-        Histogram(
+    for i, k in enumerate(SUBSCRIBER_FEATURES):
+        metric = Histogram(
             name=f"feature_{i}_value",
             documentation=f"Real time values for feature index: {i}",
             buckets=tuple(float(b) for b in os.getenv(
                 "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-        ) for i in range(len(FEATURE_COLS))
-    ]
-    for row in x_train:
-        for i, col in enumerate(row):
-            metrics[i].observe(col if isinstance(col, float) else 0)
+        )
+        for v in model_data[k]:
+            metric.observe(v if isinstance(v, float) else 0)
     print(generate_latest())
 
     compute_log_metrics(gbm, x_val, y_val)
