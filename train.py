@@ -74,8 +74,8 @@ def main():
     for i, k in enumerate(SUBSCRIBER_FEATURES):
         # https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
         iqr = model_data[k].quantile(q=0.75) - model_data[k].quantile(q=0.25)
-        width = 2 * iqr / len(model_data[k]) ** (1. / 3)
-        size = abs(model_data[k].max() - model_data[k].min()) // width
+        width = float(2 * iqr / len(model_data[k]) ** (1. / 3))
+        size = int(abs(model_data[k].max() - model_data[k].min()) // width)
         metric = Histogram(
             name=f"feature_{i}_value",
             documentation=f"Real time values for feature index: {i}",
