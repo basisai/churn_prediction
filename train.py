@@ -72,11 +72,16 @@ def main():
     gbm.fit(x_train, y_train)
 
     for i, k in enumerate(SUBSCRIBER_FEATURES):
+        # https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+        iqr = model_data[k].quantile(q=0.75) - model_data[k].quantile(q=0.25)
+        width = 2 * iqr / len(model_data[k]) ** (1. / 3)
+        size = abs(model_data[k].max() - model_data[k].min()) // width
         metric = Histogram(
             name=f"feature_{i}_value",
             documentation=f"Real time values for feature index: {i}",
-            buckets=tuple(float(b) for b in os.getenv(
-                "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
+            # buckets=tuple(float(b) for b in os.getenv(
+            #     "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
+            buckets=tuple(width * i for i in range(size))
         )
         for v in model_data[k]:
             metric.observe(v)
