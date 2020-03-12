@@ -79,7 +79,8 @@ def main():
                 "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
         )
         for v in model_data[k]:
-            metric.observe(v if isinstance(v, float) else 0)
+            metric.observe(v)
+    # push_to_gateway(gateway="prometheus-pushgateway.core.svc", job="run_step_id", registry=REGISTRY)
     print(generate_latest())
 
     compute_log_metrics(gbm, x_val, y_val)
