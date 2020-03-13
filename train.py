@@ -75,16 +75,16 @@ def main():
     for i, k in enumerate(SUBSCRIBER_FEATURES):
         bins, width = _freedman_diaconis_bins(model_data[k])
         print(f"bins: {bins} width: {width}")
-        bins = min(bins, 10)
-        first = model_data[k].mean() - width * bins / 2
+        bins = min(bins, 50)
+        first = max(model_data[k].mean() - width * bins / 2, width)
         last = first + width * bins
         print(f"first: {first} last: {last}")
         metric = Histogram(
             name=f"feature_{i}_value",
             documentation=f"Real time values for feature index: {i}",
-            buckets=tuple(float(b) for b in os.getenv(
-                "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-            # buckets=tuple([0] + list(np.linspace(start=first, stop=last, num=bins)))
+            # buckets=tuple(float(b) for b in os.getenv(
+            #     "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
+            buckets=tuple([0] + list(np.linspace(start=first, stop=last, num=bins)))
         )
         for v in model_data[k]:
             metric.observe(v)
