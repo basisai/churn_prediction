@@ -28,6 +28,11 @@ FEATURE_HISTOGRAM = [
             "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
     ) for i in range(int(os.getenv("FEATURE_TOP_N", "5")))
 ]
+INFERENCE_HISTOGRAM = Histogram(
+    name=f"inference_value",
+    documentation=f"Real time inference value from model server",
+    buckets=tuple(i / 10 for i in range(10)),
+)
 
 
 def predict_prob(subscriber_features,
@@ -69,6 +74,7 @@ def predict_prob(subscriber_features,
         .item()
     )
 
+    INFERENCE_HISTOGRAM.observe(churn_prob)
     return churn_prob
 
 

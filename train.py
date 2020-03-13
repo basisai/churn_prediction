@@ -73,7 +73,8 @@ def main():
     gbm.fit(x_train, y_train)
 
     for i, k in enumerate(SUBSCRIBER_FEATURES):
-        bins, width = min(_freedman_diaconis_bins(model_data[k]), 50)
+        bins, width = _freedman_diaconis_bins(model_data[k])
+        bins = min(bins, 50)
         print(f"bins: {bins} width: {width}")
         first = model_data[k].mean() - width * bins / 2
         last = first + width * bins
