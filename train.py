@@ -6,6 +6,7 @@ import os
 import pickle
 
 from bedrock_client.bedrock.api import BedrockApi
+import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from prometheus_client import Histogram, generate_latest
@@ -72,19 +73,28 @@ def main():
     gbm.fit(x_train, y_train)
 
     for i, k in enumerate(SUBSCRIBER_FEATURES):
-        # https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
-        iqr = model_data[k].quantile(q=0.75) - model_data[k].quantile(q=0.25)
-        width = float(2 * iqr / len(model_data[k]) ** (1. / 3))
-        size = int(abs(model_data[k].max() - model_data[k].min()) // width)
+        bins, width = min(_freedman_diaconis_bins(model_data[k]), 50)
+        print(f"bins: {bins} width: {width}")
+        first = model_data[k].mean() - width * bins / 2
+        last = first + width * bins
+        print(f"first: {first} last: {last}")
         metric = Histogram(
             name=f"feature_{i}_value",
             documentation=f"Real time values for feature index: {i}",
             # buckets=tuple(float(b) for b in os.getenv(
             #     "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-            buckets=tuple(width * i for i in range(size))
+            buckets=tuple([0] + [np.linspace(start=first, stop=last, num=bins)])
         )
         for v in model_data[k]:
             metric.observe(v)
+    y_prob = gbm.predict_proba(x_val)[:, 1]
+    metric = Histogram(
+        name=f"inference_value_test",
+        documentation=f"Inference value of the test set",
+        buckets=tuple(i / 10 for i in range(10))
+    )
+    for v in y_prob:
+        metric.observe(v)
     # push_to_gateway(gateway="prometheus-pushgateway.core.svc", job="run_step_id", registry=REGISTRY)
     print(generate_latest())
 
@@ -95,6 +105,20 @@ def main():
     with open("/artefact/train/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
 
+
+def _freedman_diaconis_bins(a):
+    """Calculate number of hist bins using Freedman-Diaconis rule."""
+    # From https://stats.stackexchange.com/questions/798/
+    if len(a) < 2:
+        return 1
+    iqr = a.quantile(q=0.75) - a.quantile(q=0.25)
+    h = 2 * iqr / (len(a) ** (1 / 3))
+    # fall back to sqrt(a) bins if iqr is 0
+    if h == 0:
+        bins = int(np.sqrt(a.size))
+        return bins, (a.max() - a.min()) / bins
+    else:
+        return int(np.ceil((a.max() - a.min()) / h)), h
 
 if __name__ == "__main__":
     main()
