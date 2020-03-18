@@ -27,17 +27,19 @@ def log_histogram(data):
     """
     registry = CollectorRegistry()
     for i, col in enumerate(data):
-        bins, width = _freedman_diaconis_bins(col)
+        name, val = col
+        val = np.asarray(val)
+        bins, width = _freedman_diaconis_bins(val)
         bins = min(bins, 50)
-        first = max(np.mean(col) - width * bins / 2, width)
+        first = max(np.mean(val) - width * bins / 2, width)
         last = first + width * bins
         metric = Histogram(
             name=f"feature_{i}_value_baseline",
-            documentation=f"Baseline values for feature index: {i}",
+            documentation=f"Baseline values for feature: {name}",
             buckets=tuple([0] + list(np.linspace(start=first, stop=last, num=bins))),
             registry=registry,
         )
-        for v in col:
+        for v in val:
             metric.observe(v)
     # push_to_gateway(gateway="prometheus-pushgateway.core.svc", job="run_step_id", registry=REGISTRY)
     with open(HISTOGRAM_PATH, "wb") as f:
