@@ -1,5 +1,5 @@
 import numpy as np
-from prometheus_client import CollectorRegistry, Histogram, generate_latest
+from prometheus_client import REGISTRY, CollectorRegistry, Histogram, generate_latest
 from prometheus_client.parser import text_fd_to_metric_families
 
 HISTOGRAM_PATH = "/artefact/train/histogram.prom"
@@ -9,7 +9,7 @@ def _freedman_diaconis_bins(a):
     # From https://stats.stackexchange.com/questions/798/
     if len(a) < 2:
         return 1
-    q75, q25 = np.percentile(a, [75 ,25])
+    q75, q25 = np.percentile(a, [75, 25])
     iqr = q75 - q25
     h = 2 * iqr / (len(a) ** (1 / 3))
     # fall back to sqrt(a) bins if iqr is 0
@@ -18,6 +18,7 @@ def _freedman_diaconis_bins(a):
         return bins, (np.max(a) - np.min(a)) / bins
     else:
         return int(np.ceil((np.max(a) - np.min(a)) / h)), h
+
 
 def log_histogram(data):
     """Computes the histogram for each feature in a dataset.
@@ -45,19 +46,28 @@ def log_histogram(data):
     with open(HISTOGRAM_PATH, "wb") as f:
         f.write(generate_latest(registry=registry))
 
-def main():
+
+def serve_histogram(registry=REGISTRY):
+    hist = []
     with open(HISTOGRAM_PATH, "r") as f:
         for metric in text_fd_to_metric_families(f):
             if metric.type != "histogram":
                 continue
-            Histogram(
-                name=metric.name.replace("_baseline", ""),
-                documentation=metric.documentation,
-                buckets=tuple(sample.labels["le"] for sample in metric.samples if sample.name.endswith("_bucket")),
+            bins = tuple(
+                sample.labels["le"] for sample in metric.samples if sample.name.endswith("_bucket")
             )
+            hist.append(
+                Histogram(
+                    name=metric.name.replace("_baseline", ""),
+                    documentation=metric.documentation.replace("Baseline", "Real time"),
+                    buckets=bins,
+                    registry=registry,
+                )
+            )
+    return hist
 
-    with open("prom5", "wb") as f:
-        f.write(generate_latest())
 
 if __name__ == "__main__":
-    main()
+    serve_histogram()
+    with open("prom5", "wb") as f:
+        f.write(generate_latest())

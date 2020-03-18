@@ -14,22 +14,14 @@ from prometheus_client import (
 )
 from prometheus_client.multiprocess import MultiProcessCollector
 
-from bins import BINS
+from metrics import HISTOGRAM_PATH, serve_histogram
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
 
 OUTPUT_MODEL_NAME = "/artefact/train/lgb_model.pkl"
 
 REGISTRY = CollectorRegistry()
 MultiProcessCollector(REGISTRY)
-FEATURE_HISTOGRAM = [
-    Histogram(
-        name=f"feature_{i}_value",
-        documentation=f"Real time values for feature index: {i}",
-        # buckets=tuple(float(b) for b in os.getenv(
-        #     "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-        buckets=tuple(BINS[i])
-    ) for i in range(int(os.getenv("FEATURE_TOP_N", "5")))
-]
+FEATURE_HISTOGRAM = serve_histogram(registry=REGISTRY)
 INFERENCE_HISTOGRAM = Histogram(
     name=f"inference_value",
     documentation=f"Real time inference value from model server",
@@ -99,7 +91,9 @@ def get_churn():
 def get_metrics():
     """Returns real time feature values recorded by prometheus
     """
-    data = generate_latest(REGISTRY)
+    with open(HISTOGRAM_PATH, "rb") as f:
+        baseline = f.read()
+    data = baseline + generate_latest(REGISTRY)
     resp = Response(data)
     resp.headers['Content-Type'] = CONTENT_TYPE_LATEST
     resp.headers['Content-Length'] = str(len(data))
