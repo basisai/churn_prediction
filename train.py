@@ -6,13 +6,13 @@ import os
 import pickle
 
 from bedrock_client.bedrock.api import BedrockApi
-import numpy as np
 import pandas as pd
 import lightgbm as lgb
-from prometheus_client import Histogram, generate_latest
+from prometheus_client import CollectorRegistry, Histogram, generate_latest
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
+from metrics import log_histogram
 from utils.helper import get_temp_data_bucket
 from utils.constants import FEATURE_COLS, SUBSCRIBER_FEATURES, TARGET_COL
 
@@ -72,32 +72,19 @@ def main():
     )
     gbm.fit(x_train, y_train)
 
-    for i, k in enumerate(SUBSCRIBER_FEATURES):
-        bins, width = _freedman_diaconis_bins(model_data[k])
-        print(f"bins: {bins} width: {width}")
-        bins = min(bins, 50)
-        first = max(model_data[k].mean() - width * bins / 2, width)
-        last = first + width * bins
-        print(f"first: {first} last: {last}")
-        metric = Histogram(
-            name=f"feature_{i}_value",
-            documentation=f"Real time values for feature index: {i}",
-            # buckets=tuple(float(b) for b in os.getenv(
-            #     "FEATURE_BINS", "0,0.25,0.5,0.75,1,2,5,10").split(",")),
-            buckets=tuple([0] + list(np.linspace(start=first, stop=last, num=bins)))
-        )
-        for v in model_data[k]:
-            metric.observe(v)
+    log_histogram(model_data[SUBSCRIBER_FEATURES].iteritems())
+    # Log inference distribution
+    registry = CollectorRegistry()
     y_prob = gbm.predict_proba(x_val)[:, 1]
     metric = Histogram(
         name=f"inference_value_test",
         documentation=f"Inference value of the test set",
-        buckets=tuple(i / 10 for i in range(10))
+        buckets=tuple(i / 10 for i in range(10)),
+        registry=registry,
     )
     for v in y_prob:
         metric.observe(v)
-    # push_to_gateway(gateway="prometheus-pushgateway.core.svc", job="run_step_id", registry=REGISTRY)
-    print(generate_latest())
+    print(generate_latest(registry=registry))
 
     compute_log_metrics(gbm, x_val, y_val)
 
@@ -105,21 +92,6 @@ def main():
     os.mkdir("/artefact/train")
     with open("/artefact/train/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
-
-
-def _freedman_diaconis_bins(a):
-    """Calculate number of hist bins using Freedman-Diaconis rule."""
-    # From https://stats.stackexchange.com/questions/798/
-    if len(a) < 2:
-        return 1
-    iqr = a.quantile(q=0.75) - a.quantile(q=0.25)
-    h = 2 * iqr / (len(a) ** (1 / 3))
-    # fall back to sqrt(a) bins if iqr is 0
-    if h == 0:
-        bins = int(np.sqrt(a.size))
-        return bins, (a.max() - a.min()) / bins
-    else:
-        return int(np.ceil((a.max() - a.min()) / h)), h
 
 if __name__ == "__main__":
     main()
