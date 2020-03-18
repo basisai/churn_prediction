@@ -72,7 +72,6 @@ def main():
     )
     gbm.fit(x_train, y_train)
 
-    log_histogram(model_data[SUBSCRIBER_FEATURES].iteritems())
     # Log inference distribution
     registry = CollectorRegistry()
     y_prob = gbm.predict_proba(x_val)[:, 1]
@@ -92,6 +91,9 @@ def main():
     os.mkdir("/artefact/train")
     with open("/artefact/train/" + OUTPUT_MODEL_NAME, "wb") as model_file:
         pickle.dump(gbm, model_file)
+
+    log_histogram(model_data[SUBSCRIBER_FEATURES].iteritems())
+
 
 if __name__ == "__main__":
     main()
