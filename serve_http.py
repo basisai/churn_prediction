@@ -27,6 +27,8 @@ INFERENCE_HISTOGRAM = Histogram(
     documentation=f"Real time inference value from model server",
     buckets=tuple(i / 10 for i in range(10)),
 )
+with open(HISTOGRAM_PATH, "rb") as f:
+    BASELINE_METRICS = f.read()
 
 
 def predict_prob(subscriber_features,
@@ -91,9 +93,7 @@ def get_churn():
 def get_metrics():
     """Returns real time feature values recorded by prometheus
     """
-    with open(HISTOGRAM_PATH, "rb") as f:
-        baseline = f.read()
-    data = baseline + generate_latest(REGISTRY)
+    data = BASELINE_METRICS + generate_latest(REGISTRY)
     resp = Response(data)
     resp.headers['Content-Type'] = CONTENT_TYPE_LATEST
     resp.headers['Content-Length'] = str(len(data))
