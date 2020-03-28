@@ -32,8 +32,15 @@ class FeatureMetric:
         )
 
     @classmethod
-    def load(cls, metric: Metric, registry=REGISTRY):
-        """Converts Prometheus metrics to appropriate feature metric.
+    def load(cls, metric: Metric, registry: CollectorRegistry = REGISTRY):
+        """Converts a Prometheus metric to feature metric and registers it for serving.
+
+        :param metric: The dumped Prometheus metric.
+        :type metric: Metric
+        :param registry: The serving Prometheus registry, defaults to REGISTRY
+        :type registry: CollectorRegistry, optional
+        :return: A registered feature metric.
+        :rtype: FeatureMetric
         """
         return cls(metric, registry)
 
@@ -116,8 +123,8 @@ class ContinuousFeature(FeatureMetric):
         :type index: int
         :param name: Name of the feature (used for documentation).
         :type name: str
-        :param bin_to_count: Counts of items in each bin (must be inserted in ascending order).
-            The last bin can be +Inf to capture None, NaN, and inf.
+        :param bin_to_count: Counts of items in each bin (must be inserted in ascending order of
+            the bin's numerical value). The last bin can be "+Inf" to capture None, NaN, and inf.
         :type bin_to_count: Mapping[str, float]
         :param sum_value: The total value of all samples, defaults to raw bucket value * count
         :type sum_value: Optional[float], optional
