@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from time import time
-from typing import Iterable, List, Mapping, Tuple, Union
+from typing import Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 from prometheus_client import (
@@ -18,7 +18,8 @@ HISTOGRAM_PATH = "/artefact/train/histogram.prom"
 
 
 class FeatureMetric:
-    """Custom Prometheus metric optimised for tracking feature / inference distribution.
+    """Custom Prometheus metric optimised for tracking feature and inference distribution during
+    model training (baseline) and model serving.
     """
 
     BASELINE_NAME_PATTERN = "feature_{0}_value_baseline"
@@ -59,6 +60,15 @@ class DiscreteFeature(FeatureMetric):
     @classmethod
     def dump(cls, index: int, name: str, bin_to_count: Mapping[str, float]) -> Metric:
         """Converts a dictionary of bin to count to Prometheus counter.
+
+        :param index: Index in the feature vector (must be the same for training and serving).
+        :type index: int
+        :param name: Name of the feature (used for documentation).
+        :type name: str
+        :param bin_to_count: Counts of items in each bin.
+        :type bin_to_count: Mapping[str, float]
+        :return: The converted Prometheus counter metric.
+        :rtype: Metric
         """
         counter = CounterMetricFamily(
             name=cls.BASELINE_NAME_PATTERN.format(index),
@@ -93,8 +103,26 @@ class ContinuousFeature(FeatureMetric):
         )
 
     @classmethod
-    def dump(cls, index, name, bin_to_count: Mapping[str, float], sum_value=None):
+    def dump(
+        cls,
+        index: int,
+        name: str,
+        bin_to_count: Mapping[str, float],
+        sum_value: Optional[float] = None,
+    ) -> Metric:
         """Converts a dictionary of bin to count to Prometheus histogram.
+
+        :param index: Index in the feature vector (must be the same for training and serving).
+        :type index: int
+        :param name: Name of the feature (used for documentation).
+        :type name: str
+        :param bin_to_count: Counts of items in each bin (must be inserted in ascending order).
+            The last bin can be +Inf to capture None, NaN, and inf.
+        :type bin_to_count: Mapping[str, float]
+        :param sum_value: The total value of all samples, defaults to raw bucket value * count
+        :type sum_value: Optional[float], optional
+        :return: The converted Prometheus histogram metric.
+        :rtype: Metric
         """
         buckets = []
         accumulator = 0
@@ -109,7 +137,8 @@ class ContinuousFeature(FeatureMetric):
             name=cls.BASELINE_NAME_PATTERN.format(index),
             documentation=cls.BASELINE_DOC_PATTERN.format(name),
             buckets=buckets,
-            sum_value=sum_value,
+            sum_value=sum_value
+            or sum(float(k) * v for k, v in bin_to_count.items() if k != "+Inf"),
         )
 
     def observe(self, value):
@@ -119,11 +148,24 @@ class ContinuousFeature(FeatureMetric):
             self.metric.observe(value)
 
 
-class FeatureMetricCollector(object):
+class ComputedMetricCollector:
+    def __init__(self, metric: List[Metric]):
+        """A wrapper for manually computed baseline distribution of features metrics.
+
+        :param metric: A list of Prometheus metrics returned from FeatureMetric.dump.
+        :type metric: List[Metric]
+        """
+        self.metric = metric
+
+    def collect(self):
+        return self.metric
+
+
+class FeatureMetricCollector:
     """Computes data distribution and exports as baseline feature metric.
     """
 
-    BUILDER: Mapping[str, FeatureMetric] = {
+    SUPPORTED: Mapping[str, FeatureMetric] = {
         "histogram": ContinuousFeature,
         "counter": DiscreteFeature,
     }
@@ -140,17 +182,14 @@ class FeatureMetricCollector(object):
         :return: Whether input array only contains discrete values
         :rtype: bool
         """
-        # Sample too small to determine, fallback to continuous histogram
-        size = len(val)
-        if size < 100:
-            return False
         # Sample size too big, use 1% of max_samples to cap computation at 1ms
+        size = len(val)
         if size > 1000:
             size = min(len(val), self.max_samples // 100)
             val = np.random.choice(val, size, replace=False)
         bins = np.unique(val)
         # Caps number of bins to 50
-        return len(bins) * 20 < size
+        return len(bins) < 3 or len(bins) * 20 < size
 
     @staticmethod
     def _get_bins(val: List[float]) -> List[float]:
@@ -232,6 +271,14 @@ class FeatureMetricCollector(object):
             )
 
 
+def log_raw(metric: List[Metric], path: str = HISTOGRAM_PATH):
+    registry = CollectorRegistry()
+    collector = ComputedMetricCollector(metric)
+    registry.register(collector)
+    with open(path, "wb") as f:
+        f.write(generate_latest(registry=registry))
+
+
 def log_histogram(data: Iterable[Tuple[str, List[float]]], path: str = HISTOGRAM_PATH):
     """Computes the histogram for each feature in a dataset.
     Saves to a local Prometheus file at HISTOGRAM_PATH.
@@ -261,9 +308,9 @@ def serve_histogram(registry=REGISTRY) -> List[FeatureMetric]:
             if not metric.name.endswith("_baseline"):
                 continue
             # Ignore unsupported metric type
-            if metric.type not in FeatureMetricCollector.BUILDER:
+            if metric.type not in FeatureMetricCollector.SUPPORTED:
                 continue
-            serving = FeatureMetricCollector.BUILDER[metric.type](
+            serving = FeatureMetricCollector.SUPPORTED[metric.type].load(
                 metric=metric, registry=registry
             )
             features.append(serving)
