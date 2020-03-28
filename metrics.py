@@ -1,14 +1,133 @@
-from typing import Iterable, List, Tuple
+from abc import abstractmethod
+from time import time
+from typing import Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
-from prometheus_client import REGISTRY, CollectorRegistry, Histogram, generate_latest
+from prometheus_client import (
+    REGISTRY,
+    CollectorRegistry,
+    Counter,
+    Histogram,
+    Metric,
+    generate_latest,
+)
 from prometheus_client.core import CounterMetricFamily, HistogramMetricFamily
 from prometheus_client.parser import text_fd_to_metric_families
 
 HISTOGRAM_PATH = "/artefact/train/histogram.prom"
 
 
-class BaselineHistogramCollector(object):
+class FeatureMetric:
+    """Custom Prometheus metric optimised for tracking feature / inference distribution.
+    """
+
+    BASELINE_NAME_PATTERN = "feature_{0}_value_baseline"
+    BASELINE_DOC_PATTERN = "Baseline values for feature: {0}"
+
+    def _get_serving_name_and_documentation_from_baseline(self, metric: Metric):
+        return (
+            metric.name.replace("_baseline", ""),
+            metric.documentation.replace("Baseline", "Real time"),
+        )
+
+    @classmethod
+    def load(cls, metric: Metric, registry=REGISTRY):
+        """Converts Prometheus metrics to appropriate feature metric.
+        """
+        return cls(metric, registry)
+
+    @abstractmethod
+    def observe(self, value):
+        raise NotImplementedError
+
+
+class DiscreteFeature(FeatureMetric):
+    """Handles discrete variables, including both numeric and non-numeric values.
+    """
+
+    BIN_LABEL = "bin"
+
+    def __init__(self, metric: Metric, registry=REGISTRY):
+        self.metric = Counter(
+            *self._get_serving_name_and_documentation_from_baseline(metric),
+            labelnames=(self.BIN_LABEL,),
+            registry=registry,
+        )
+        for sample in metric.samples:
+            self.metric.labels(**{self.BIN_LABEL: sample.labels[self.BIN_LABEL]}).inc(0)
+
+    @classmethod
+    def dump(cls, index: int, name: str, bin_to_count: Mapping[str, float]) -> Metric:
+        """Converts a dictionary of bin to count to Prometheus counter.
+        """
+        counter = CounterMetricFamily(
+            name=cls.BASELINE_NAME_PATTERN.format(index),
+            documentation=cls.BASELINE_DOC_PATTERN.format(name),
+            labels=(cls.BIN_LABEL,),
+        )
+        for k, v in bin_to_count.items():
+            counter.add_metric(labels=[k], value=v)
+        return counter
+
+    def observe(self, value):
+        # Track None, NaN, Inf separately for discrete values
+        self.metric.labels(bin=str(value)).inc()
+
+
+class ContinuousFeature(FeatureMetric):
+    """Handles continuous variables, including None, NaN, and Inf.
+    """
+
+    BIN_LABEL = "le"
+
+    def __init__(self, metric: Metric, registry=REGISTRY):
+        bins = tuple(
+            sample.labels[self.BIN_LABEL]
+            for sample in metric.samples
+            if sample.name.endswith("_bucket")
+        )
+        self.metric = Histogram(
+            *self._get_serving_name_and_documentation_from_baseline(metric),
+            buckets=bins,
+            registry=registry,
+        )
+
+    @classmethod
+    def dump(cls, index, name, bin_to_count: Mapping[str, float], sum_value=None):
+        """Converts a dictionary of bin to count to Prometheus histogram.
+        """
+        buckets = []
+        accumulator = 0
+        for k, v in bin_to_count.items():
+            accumulator += v
+            buckets.append([k, accumulator])
+
+        if "+Inf" not in bin_to_count:
+            buckets.append(["+Inf", buckets[-1][1]])
+
+        return HistogramMetricFamily(
+            name=cls.BASELINE_NAME_PATTERN.format(index),
+            documentation=cls.BASELINE_DOC_PATTERN.format(name),
+            buckets=buckets,
+            sum_value=sum_value,
+        )
+
+    def observe(self, value):
+        if not value or value == float("inf") or value == float("nan"):
+            self.metric._buckets[-1].inc(1)
+        else:
+            self.metric.observe(value)
+
+
+class FeatureMetricCollector(object):
+    """Computes data distribution and exports as baseline feature metric.
+    """
+
+    BUILDER: Mapping[str, FeatureMetric] = {
+        "histogram": ContinuousFeature,
+        "counter": DiscreteFeature,
+    }
+
     def __init__(self, data, max_samples: int = 100000):
         self.data: Iterable[Tuple[str, List[float]]] = data
         self.max_samples: int = max_samples
@@ -30,6 +149,7 @@ class BaselineHistogramCollector(object):
             size = min(len(val), self.max_samples // 100)
             val = np.random.choice(val, size, replace=False)
         bins = np.unique(val)
+        # Caps number of bins to 50
         return len(bins) * 20 < size
 
     @staticmethod
@@ -80,49 +200,39 @@ class BaselineHistogramCollector(object):
                 size = self.max_samples
                 val = np.random.choice(val, self.max_samples, replace=False)
 
+            if self._is_discrete(val):
+                bins, counts = np.unique(val, return_counts=True)
+                bin_to_count = {str(bins[i]): counts[i] for i in range(len(bins))}
+                yield DiscreteFeature.dump(
+                    index=i, name=name, bin_to_count=bin_to_count,
+                )
+                continue
+
             val = val[~np.isnan(val)]
+            val = val[~np.isinf(val)]
             size_inf = size - len(val)
 
             # Clamp non-positive values to 0, assuming data is normalized
             sum_value = np.sum(val)
-            val = val[val > 0]
-            size_zero = size - size_inf - len(val)
+            # val = val[val > 0]
+            # size_zero = size - size_inf - len(val)
 
-            if self._is_discrete(val):
-                bins, counts = np.unique(val, return_counts=True)
-                counter = CounterMetricFamily(
-                    name=f"feature_{i}_value_baseline",
-                    documentation=f"Baseline values for feature: {name}",
-                    labels=["bin"],
-                )
-                for j, b in enumerate(bins):
-                    counter.add_metric(labels=[str(b)], value=counts[j])
-                yield counter
-                continue
-
-            buckets = [["0.0", size_zero]]
             if len(val) == 0:
-                buckets.append(["1.0", 0])
-                buckets.append(["+Inf", size_inf])
+                bin_to_count = {"0.0": 0}
             else:
                 bins = self._get_bins(val)
-                # Make all values negative to "le" as the bin upper bound
-                count, _ = np.histogram(-val, bins=-np.flip([0] + bins))
-                for j, c in enumerate(np.flip(count)):
-                    buckets.append([str(bins[j]), buckets[-1][1] + c])
-                buckets.append(["+Inf", buckets[-1][1] + size_inf])
+                # Make all values negative to use "le" as the bin upper bound
+                counts, _ = np.histogram(-val, bins=-np.flip([bins[0]] + bins))
+                counts = np.flip(counts)
+                bin_to_count = {str(bins[i]): counts[i] for i in range(len(bins))}
 
-            yield HistogramMetricFamily(
-                name=f"feature_{i}_value_baseline",
-                documentation=f"Baseline values for feature: {name}",
-                buckets=buckets,
-                sum_value=sum_value,
-                labels=None,
-                unit="",
+            bin_to_count["+Inf"] = size_inf
+            yield ContinuousFeature.dump(
+                index=i, name=name, bin_to_count=bin_to_count, sum_value=sum_value
             )
 
 
-def log_histogram(data: Iterable[Tuple[str, List[float]]]):
+def log_histogram(data: Iterable[Tuple[str, List[float]]], path: str = HISTOGRAM_PATH):
     """Computes the histogram for each feature in a dataset.
     Saves to a local Prometheus file at HISTOGRAM_PATH.
 
@@ -130,39 +240,34 @@ def log_histogram(data: Iterable[Tuple[str, List[float]]]):
     :type data: Iterable[Tuple[str, List[float]]]
     """
     registry = CollectorRegistry()
-    collector = BaselineHistogramCollector(data)
+    collector = FeatureMetricCollector(data)
     registry.register(collector)
-    with open(HISTOGRAM_PATH, "wb") as f:
+    with open(path, "wb") as f:
         f.write(generate_latest(registry=registry))
 
 
-def serve_histogram(registry=REGISTRY) -> List[Histogram]:
+def serve_histogram(registry=REGISTRY) -> List[FeatureMetric]:
     """Parses baseline histogram file to create serving time metrics.
 
     :param registry: The collector registry, defaults to REGISTRY
     :type registry: CollectorRegistry, optional
-    :return: List of Prometheus Histgogram
-    :rtype: List[Histogram]
+    :return: List of custom Prometheus metrics
+    :rtype: List[FeatureMetric]
     """
-    hist = []
+    features: List[FeatureMetric] = []
     with open(HISTOGRAM_PATH, "r") as f:
         for metric in text_fd_to_metric_families(f):
-            if metric.type != "histogram":
+            # Ignore non-baseline metrics
+            if not metric.name.endswith("_baseline"):
                 continue
-            bins = tuple(
-                sample.labels["le"]
-                for sample in metric.samples
-                if sample.name.endswith("_bucket")
+            # Ignore unsupported metric type
+            if metric.type not in FeatureMetricCollector.BUILDER:
+                continue
+            serving = FeatureMetricCollector.BUILDER[metric.type](
+                metric=metric, registry=registry
             )
-            hist.append(
-                Histogram(
-                    name=metric.name.replace("_baseline", ""),
-                    documentation=metric.documentation.replace("Baseline", "Real time"),
-                    buckets=bins,
-                    registry=registry,
-                )
-            )
-    return hist
+            features.append(serving)
+    return features
 
 
 if __name__ == "__main__":

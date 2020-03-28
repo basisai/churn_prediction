@@ -61,7 +61,7 @@ def predict_prob(subscriber_features,
     for j, histogram in enumerate(FEATURE_HISTOGRAM):
         if j >= len(row_feats):
             break
-        histogram.observe(row_feats[j] or 0)
+        histogram.observe(row_feats[j])
 
     # Score
     churn_prob = (
