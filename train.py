@@ -6,6 +6,7 @@ import os
 import pickle
 
 from bedrock_client.bedrock.api import BedrockApi
+from bedrock_client.bedrock.metrics.service import ModelMonitoringService
 import pandas as pd
 import lightgbm as lgb
 from sklearn import metrics
@@ -70,6 +71,7 @@ def main():
     )
     gbm.fit(x_train, y_train)
     compute_log_metrics(gbm, x_val, y_val)
+    ModelMonitoringService.dump(model_data[FEATURE_COLS].iteritems())
 
     print("\tSaving model")
     os.mkdir("/artefact/train")
