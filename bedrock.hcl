@@ -86,7 +86,8 @@ train {
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
-            "pip install -i https://test.pypi.org/simple/ bdrk[prediction-store]==0.1.7.dev3",
+            "pip3 install fluent-logger prometheus_client numpy",
+            "pip install -i https://test.pypi.org/simple/ bdrk==0.1.7.dev3",
         ]
         script = [{sh = ["python3 train.py"]}]
         resources {
@@ -215,7 +216,8 @@ serve {
     install = [
         "pip3 install --upgrade pip",
         "pip3 install -r requirements-serve.txt",
-        "pip install -i https://test.pypi.org/simple/ bdrk[prediction-store]==0.1.7.dev3",
+        "pip3 install fluent-logger prometheus_client numpy",
+        "pip install -i https://test.pypi.org/simple/ bdrk==0.1.7.dev3",
     ]
     script = [
         {sh = [
