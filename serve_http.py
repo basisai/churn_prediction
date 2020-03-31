@@ -86,7 +86,7 @@ def get_metrics():
     """
     body, headers = current_app.monitor.export_http()
     resp = Response(body)
-    resp.headers.update(headers)
+    resp.headers = headers
     return resp
 
 
