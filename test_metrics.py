@@ -3,7 +3,7 @@ from time import time
 
 import numpy as np
 
-from metrics import ContinuousFeature, DiscreteFeature, log_histogram, log_raw
+from metrics import ContinuousVariable, DiscreteVariable, log_histogram, log_raw
 
 SAMPLE_TRAINING_DATA = [
     ("first", [3.0, 3.0, 4.0, 5.0, 8.0, 10.0, 13.0, 13.0]),
@@ -69,7 +69,7 @@ def test_computed_collector():
     path = "./test_histogram.prom"
     log_raw(
         [
-            ContinuousFeature.dump(
+            ContinuousVariable.dump_frequency(
                 index=0,
                 name="first",
                 bin_to_count={
@@ -81,7 +81,7 @@ def test_computed_collector():
                 },
                 sum_value=59,
             ),
-            ContinuousFeature.dump(
+            ContinuousVariable.dump_frequency(
                 index=1,
                 name="second",
                 bin_to_count={
@@ -94,7 +94,7 @@ def test_computed_collector():
                 },
                 sum_value=116,
             ),
-            ContinuousFeature.dump(
+            ContinuousVariable.dump_frequency(
                 index=2,
                 name="third",
                 bin_to_count={
@@ -107,7 +107,7 @@ def test_computed_collector():
                 },
                 sum_value=50,
             ),
-            DiscreteFeature.dump(
+            DiscreteVariable.dump_frequency(
                 index=3, name="fourth", bin_to_count={"0.0": 5, "1.0": 3}
             ),
         ],

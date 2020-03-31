@@ -17,39 +17,75 @@ from prometheus_client.parser import text_fd_to_metric_families
 HISTOGRAM_PATH = "/artefact/train/histogram.prom"
 
 
-class FeatureMetric:
-    """Custom Prometheus metric optimised for tracking feature and inference distribution during
-    model training (baseline) and model serving.
+class FrequencyMetric:
+    """Base metric type for tracking the frequency of observations occurring in certain ranges
+    of values. It will be implemented differently for discrete and continuous variables in ways
+    that best preserve their statistical properties.
+
+    This class only deals with streaming updates of frequency counts. It is the caller's
+    responsibility to compute optimal bins on training data and provide their frequency counts as
+    baseline metrics.
+
+    Useful for tracking feature and inference distributions during training and model serving.
     """
 
     BASELINE_NAME_PATTERN = "feature_{0}_value_baseline"
     BASELINE_DOC_PATTERN = "Baseline values for feature: {0}"
 
-    def _get_serving_name_and_documentation_from_baseline(self, metric: Metric):
+    @abstractmethod
+    def __init__(self, metric: Metric, registry=REGISTRY):
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_serving_name_and_documentation_from_baseline(
+        metric: Metric,
+    ) -> Tuple[str, str]:
         return (
             metric.name.replace("_baseline", ""),
             metric.documentation.replace("Baseline", "Real time"),
         )
 
     @classmethod
-    def load(cls, metric: Metric, registry: CollectorRegistry = REGISTRY):
-        """Converts a Prometheus metric to feature metric and registers it for serving.
+    @abstractmethod
+    def dump_frequency(
+        cls, index: int, name: str, bin_to_count: Mapping[str, int]
+    ) -> Metric:
+        """Exports the baseline frequency count as a Prometheus metric.
+
+        :param index: Index in the feature vector (must be the same for training and serving).
+        :type index: int
+        :param name: Name of the feature (used for documentation).
+        :type name: str
+        :param bin_to_count: Counts of items in each bin.
+        :type bin_to_count: Mapping[str, int]
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def load_frequency(cls, metric: Metric, registry: CollectorRegistry = REGISTRY):
+        """Imports baseline Prometheus metrics and registers itself for receiving observations.
 
         :param metric: The dumped Prometheus metric.
         :type metric: Metric
         :param registry: The serving Prometheus registry, defaults to REGISTRY
         :type registry: CollectorRegistry, optional
         :return: A registered feature metric.
-        :rtype: FeatureMetric
+        :rtype: FrequencyMetric
         """
         return cls(metric, registry)
 
     @abstractmethod
-    def observe(self, value):
+    def observe(self, value, labels: Optional[Mapping[str, str]] = None):
+        """Adds a new observation to the frequency table by incrementing the counter of the
+        appropriate bin.
+
+        :param value: The observed value
+        :type value: Union[float, str]
+        """
         raise NotImplementedError
 
 
-class DiscreteFeature(FeatureMetric):
+class DiscreteVariable(FrequencyMetric):
     """Handles discrete variables, including both numeric and non-numeric values.
     """
 
@@ -65,7 +101,9 @@ class DiscreteFeature(FeatureMetric):
             self.metric.labels(**{self.BIN_LABEL: sample.labels[self.BIN_LABEL]}).inc(0)
 
     @classmethod
-    def dump(cls, index: int, name: str, bin_to_count: Mapping[str, float]) -> Metric:
+    def dump_frequency(
+        cls, index: int, name: str, bin_to_count: Mapping[str, int]
+    ) -> Metric:
         """Converts a dictionary of bin to count to Prometheus counter.
 
         :param index: Index in the feature vector (must be the same for training and serving).
@@ -73,7 +111,7 @@ class DiscreteFeature(FeatureMetric):
         :param name: Name of the feature (used for documentation).
         :type name: str
         :param bin_to_count: Counts of items in each bin.
-        :type bin_to_count: Mapping[str, float]
+        :type bin_to_count: Mapping[str, int]
         :return: The converted Prometheus counter metric.
         :rtype: Metric
         """
@@ -86,12 +124,15 @@ class DiscreteFeature(FeatureMetric):
             counter.add_metric(labels=[k], value=v)
         return counter
 
-    def observe(self, value):
+    def observe(self, value, labels: Optional[Mapping[str, str]] = None):
+        base = {"bin": str(value)}
+        if labels:
+            base.update(labels)
         # Track None, NaN, Inf separately for discrete values
-        self.metric.labels(bin=str(value)).inc()
+        self.metric.labels(**labels).inc()
 
 
-class ContinuousFeature(FeatureMetric):
+class ContinuousVariable(FrequencyMetric):
     """Handles continuous variables, including None, NaN, and Inf.
     """
 
@@ -110,11 +151,11 @@ class ContinuousFeature(FeatureMetric):
         )
 
     @classmethod
-    def dump(
+    def dump_frequency(
         cls,
         index: int,
         name: str,
-        bin_to_count: Mapping[str, float],
+        bin_to_count: Mapping[str, int],
         sum_value: Optional[float] = None,
     ) -> Metric:
         """Converts a dictionary of bin to count to Prometheus histogram.
@@ -125,7 +166,7 @@ class ContinuousFeature(FeatureMetric):
         :type name: str
         :param bin_to_count: Counts of items in each bin (must be inserted in ascending order of
             the bin's numerical value). The last bin can be "+Inf" to capture None, NaN, and inf.
-        :type bin_to_count: Mapping[str, float]
+        :type bin_to_count: Mapping[str, int]
         :param sum_value: The total value of all samples, defaults to raw bucket value * count
         :type sum_value: Optional[float], optional
         :return: The converted Prometheus histogram metric.
@@ -148,18 +189,19 @@ class ContinuousFeature(FeatureMetric):
             or sum(float(k) * v for k, v in bin_to_count.items() if k != "+Inf"),
         )
 
-    def observe(self, value):
+    def observe(self, value, labels: Optional[Mapping[str, str]] = None):
+        metric = self.metric.labels(**labels) if labels else self.metric
         if not value or value == float("inf") or value == float("nan"):
-            self.metric._buckets[-1].inc(1)
+            metric._buckets[-1].inc(1)
         else:
-            self.metric.observe(value)
+            metric.observe(value)
 
 
 class ComputedMetricCollector:
     def __init__(self, metric: List[Metric]):
         """A wrapper for manually computed baseline distribution of features metrics.
 
-        :param metric: A list of Prometheus metrics returned from FeatureMetric.dump.
+        :param metric: A list of Prometheus metrics returned from FrequencyMetric.dump_frequency.
         :type metric: List[Metric]
         """
         self.metric = metric
@@ -168,13 +210,34 @@ class ComputedMetricCollector:
         return self.metric
 
 
-class FeatureMetricCollector:
-    """Computes data distribution and exports as baseline feature metric.
+class InferenceMetricCollector:
+    """Collects metrics related to inference results.
     """
 
-    SUPPORTED: Mapping[str, FeatureMetric] = {
-        "histogram": ContinuousFeature,
-        "counter": DiscreteFeature,
+    BASELINE_NAME_PATTERN = "inference_value_baseline"
+    BASELINE_DOC_PATTERN = "Baseline inference values for category: {0}"
+
+    def __init__(
+        self, data, model, categories: Optional[List] = None, max_samples: int = 100000
+    ):
+        self.data: Iterable[Tuple[str, List[float]]] = data
+        self.model = model
+        self.categories = categories
+        self.max_samples: int = max_samples
+
+    def collect(self):
+        pass
+
+
+class FeatureMetricCollector:
+    """Collects metrics related to feature distribution.
+    """
+
+    BASELINE_NAME_PATTERN = "feature_{0}_value_baseline"
+    BASELINE_DOC_PATTERN = "Baseline values for feature: {0}"
+    SUPPORTED: Mapping[str, FrequencyMetric] = {
+        "histogram": ContinuousVariable,
+        "counter": DiscreteVariable,
     }
 
     def __init__(self, data, max_samples: int = 100000):
@@ -249,7 +312,7 @@ class FeatureMetricCollector:
             if self._is_discrete(val):
                 bins, counts = np.unique(val, return_counts=True)
                 bin_to_count = {str(bins[i]): counts[i] for i in range(len(bins))}
-                yield DiscreteFeature.dump(
+                yield DiscreteVariable.dump_frequency(
                     index=i, name=name, bin_to_count=bin_to_count,
                 )
                 continue
@@ -258,11 +321,8 @@ class FeatureMetricCollector:
             val = val[~np.isinf(val)]
             size_inf = size - len(val)
 
-            # Clamp non-positive values to 0, assuming data is normalized
+            # Allows negative values as bin edge
             sum_value = np.sum(val)
-            # val = val[val > 0]
-            # size_zero = size - size_inf - len(val)
-
             if len(val) == 0:
                 bin_to_count = {"0.0": 0}
             else:
@@ -273,7 +333,7 @@ class FeatureMetricCollector:
                 bin_to_count = {str(bins[i]): counts[i] for i in range(len(bins))}
 
             bin_to_count["+Inf"] = size_inf
-            yield ContinuousFeature.dump(
+            yield ContinuousVariable.dump_frequency(
                 index=i, name=name, bin_to_count=bin_to_count, sum_value=sum_value
             )
 
@@ -300,15 +360,15 @@ def log_histogram(data: Iterable[Tuple[str, List[float]]], path: str = HISTOGRAM
         f.write(generate_latest(registry=registry))
 
 
-def serve_histogram(registry=REGISTRY) -> List[FeatureMetric]:
+def serve_histogram(registry=REGISTRY) -> List[FrequencyMetric]:
     """Parses baseline histogram file to create serving time metrics.
 
     :param registry: The collector registry, defaults to REGISTRY
     :type registry: CollectorRegistry, optional
     :return: List of custom Prometheus metrics
-    :rtype: List[FeatureMetric]
+    :rtype: List[FrequencyMetric]
     """
-    features: List[FeatureMetric] = []
+    features: List[FrequencyMetric] = []
     with open(HISTOGRAM_PATH, "r") as f:
         for metric in text_fd_to_metric_families(f):
             # Ignore non-baseline metrics
@@ -317,7 +377,7 @@ def serve_histogram(registry=REGISTRY) -> List[FeatureMetric]:
             # Ignore unsupported metric type
             if metric.type not in FeatureMetricCollector.SUPPORTED:
                 continue
-            serving = FeatureMetricCollector.SUPPORTED[metric.type].load(
+            serving = FeatureMetricCollector.SUPPORTED[metric.type].load_frequency(
                 metric=metric, registry=registry
             )
             features.append(serving)
