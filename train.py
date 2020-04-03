@@ -71,7 +71,7 @@ def main():
     )
     gbm.fit(x_train, y_train)
     compute_log_metrics(gbm, x_val, y_val)
-    ModelMonitoringService.dump(model_data[FEATURE_COLS].iteritems())
+    ModelMonitoringService.export_text(model_data[FEATURE_COLS].iteritems())
 
     print("\tSaving model")
     os.mkdir("/artefact/train")
