@@ -84,7 +84,10 @@ def init_background_threads():
 def get_metrics():
     """Returns real time feature values recorded by prometheus
     """
-    body, content_type = current_app.monitor.export_http()
+    body, content_type = current_app.monitor.export_http(
+        params=request.args.to_dict(flat=False),
+        headers=request.headers,
+    )
     return Response(body, content_type=content_type)
 
 
