@@ -6,8 +6,10 @@ import os
 import pickle
 
 from bedrock_client.bedrock.api import BedrockApi
+from bedrock_client.bedrock.metrics.service import ModelMonitoringService
 import pandas as pd
 import lightgbm as lgb
+import numpy as np
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
@@ -70,6 +72,17 @@ def main():
     )
     gbm.fit(x_train, y_train)
     compute_log_metrics(gbm, x_val, y_val)
+
+    print("\Computing metrics")
+    features = model_data[FEATURE_COLS]
+    selected = np.random.choice(features.shape[0], size=1000, replace=False)
+    features = features.iloc[selected]
+    inference = gbm.predict_proba(features)[:, 1]
+
+    ModelMonitoringService.export_text(
+        features=features.iteritems(),
+        inference=inference.tolist(),
+    )
 
     print("\tSaving model")
     os.mkdir("/artefact/train")
