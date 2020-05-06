@@ -104,7 +104,7 @@ train {
         FEATURES_DATA = "churn_data/features.csv"
         LR = "0.05"
         NUM_LEAVES = "10"
-        N_ESTIMATORS = "150"
+        N_ESTIMATORS = "100"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
 
