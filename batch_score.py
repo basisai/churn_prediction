@@ -31,12 +31,12 @@ def main():
             .format(len(subscriber_pd_df)))
 
     print("\tLoading model")
-    with open("/artefact/train/" + OUTPUT_MODEL_NAME, "rb") as model_file:
-        gbm = pickle.load(model_file)
+    with open("/artefact/" + OUTPUT_MODEL_NAME, "rb") as model_file:
+        clf = pickle.load(model_file)
 
     print("\tScoring")
     subscriber_pd_df["Prob"] = (
-        gbm.predict_proba(subscriber_pd_df[FEATURE_COLS])[:, 1]
+        clf.predict_proba(subscriber_pd_df[FEATURE_COLS])[:, 1]
     )
 
     start = time.time()

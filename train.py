@@ -64,19 +64,20 @@ def main():
         model_data[TARGET_COL],
         test_size=0.2,
     )
+
     print("\tTrain model")
-    gbm = lgb.LGBMClassifier(
+    clf = lgb.LGBMClassifier(
         num_leaves=NUM_LEAVES,
         learning_rate=LR,
         n_estimators=N_ESTIMATORS,
     )
-    gbm.fit(x_train, y_train)
-    compute_log_metrics(gbm, x_val, y_val)
+    clf.fit(x_train, y_train)
+    compute_log_metrics(clf, x_val, y_val)
 
     print("\tComputing metrics")
     selected = np.random.choice(model_data.shape[0], size=1000, replace=False)
     features = model_data[FEATURE_COLS].iloc[selected]
-    inference = gbm.predict_proba(features)[:, 1]
+    inference = clf.predict_proba(features)[:, 1]
 
     ModelMonitoringService.export_text(
         features=features.iteritems(),
@@ -84,9 +85,8 @@ def main():
     )
 
     print("\tSaving model")
-    os.mkdir("/artefact/train")
-    with open("/artefact/train/" + OUTPUT_MODEL_NAME, "wb") as model_file:
-        pickle.dump(gbm, model_file)
+    with open("/artefact/" + OUTPUT_MODEL_NAME, "wb") as model_file:
+        pickle.dump(clf, model_file)
 
 
 if __name__ == "__main__":
