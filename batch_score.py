@@ -4,13 +4,12 @@ Script to perform batch scoring.
 import os
 import pickle
 import time
+
 import pandas as pd
 
-from utils.helper import get_temp_data_bucket
 from utils.constants import FEATURE_COLS
 
-TEMP_DATA_BUCKET = get_temp_data_bucket()
-FEATURES_DATA = TEMP_DATA_BUCKET + os.getenv("FEATURES_DATA")
+FEATURES_DATA = os.path.join(os.getenv("TEMP_DATA_BUCKET"), os.getenv("FEATURES_DATA"))
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
 BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
