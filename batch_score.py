@@ -5,11 +5,11 @@ import os
 import pickle
 import time
 
-from pyspark.sql import SparkSession
+import pandas as pd
 
 from utils.constants import FEATURE_COLS
-from utils.preprocess import generate_features
 
+FEATURES_DATA = os.path.join(os.getenv("TEMP_DATA_BUCKET"), os.getenv("FEATURES_DATA"))
 OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 BIGQUERY_PROJECT = os.getenv("BIGQUERY_PROJECT")
 BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET")
@@ -18,29 +18,26 @@ DEST_SUBSCRIBER_SCORE_TABLE = os.getenv("DEST_SUBSCRIBER_SCORE_TABLE")
 
 def main():
     """Batch scoring pipeline"""
-    with SparkSession.builder.appName("BatchScoring").getOrCreate() as spark:
-        spark.sparkContext.setLogLevel("FATAL")
-
-        start = time.time()
-        print("\tLoading active subscribers")
-        subscriber_df = generate_features(spark)
-        subscriber_pd_df = (
-            subscriber_df
-            .filter(subscriber_df["Churn"] == 0)
-            .drop("Churn")
-            .toPandas()
-        )
-        print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
-        print("\tNumber of active subscribers = {}"
-              .format(subscriber_pd_df.shape[0]))
+    start = time.time()
+    print("\tLoading active subscribers")
+    subscriber_df = pd.read_csv(FEATURES_DATA)
+    subscriber_pd_df = (
+        subscriber_df
+        .filter(subscriber_df["Churn"] == 0)
+        .drop("Churn")
+        .toPandas()
+    )
+    print("\tTime taken = {:.2f} min".format((time.time() - start) / 60))
+    print("\tNumber of active subscribers = {}"
+          .format(subscriber_pd_df.shape[0]))
 
     print("\tLoading model")
-    with open("/artefact/" + OUTPUT_MODEL_NAME, "rb") as model_file:
-        gbm = pickle.load(model_file)
+    with open("/artefact/train/" + OUTPUT_MODEL_NAME, "rb") as model_file:
+        clf = pickle.load(model_file)
 
     print("\tScoring")
     subscriber_pd_df["Prob"] = (
-        gbm.predict_proba(subscriber_pd_df[FEATURE_COLS])[:, 1]
+        clf.predict_proba(subscriber_pd_df[FEATURE_COLS])[:, 1]
     )
 
     start = time.time()

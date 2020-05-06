@@ -20,7 +20,10 @@ train {
     // A step's name must be unique.
     step preprocess {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+        ]
         // As we are using Spark, "script" is written in the manner shown below.
         // If Spark is not required, it is just simply:
         // script = [{sh = ["python3 train.py"]}]
@@ -82,7 +85,10 @@ train {
 
     step train {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+        ]
         script = [{sh = ["python3 train.py"]}]
         resources {
             cpu = "0.5"
@@ -100,7 +106,7 @@ train {
         FEATURES_DATA = "churn_data/features.csv"
         LR = "0.05"
         NUM_LEAVES = "10"
-        N_ESTIMATORS = "150"
+        N_ESTIMATORS = "100"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
 
@@ -148,7 +154,10 @@ batch_score {
 
     step generate_features {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+        ]
         script = [
             {spark-submit {
                 script = "generate_features.py"
@@ -176,7 +185,11 @@ batch_score {
 
     step batch_score {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install pandas-gbq"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+            "pip3 install pandas-gbq",
+        ]
         script = [{sh = ["python3 batch_score.py"]}]
         resources {
             cpu = "0.5"
@@ -211,8 +224,9 @@ serve {
     // The second line in "install" is to generate serve_pb2 and serve_pb2_grpc.
     // It requires protos/serve.proto.
     install = [
-        "pip3 install --upgrade pip && pip3 install -r requirements-serve.txt",
-        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto"
+        "pip3 install --upgrade pip",
+        "pip3 install -r requirements-serve.txt",
+        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto",
     ]
     script = [{sh = ["python3 serve_grpc.py"]}]
 
