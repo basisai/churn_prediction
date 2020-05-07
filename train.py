@@ -15,7 +15,8 @@ from sklearn.model_selection import train_test_split
 
 from utils.constants import FEATURE_COLS, TARGET_COL
 
-FEATURES_DATA = os.path.join(os.getenv("TEMP_DATA_BUCKET"), os.getenv("FEATURES_DATA"))
+FEATURES_DATA = os.path.join(os.getenv("TEMP_DATA_BUCKET"),
+                             os.getenv("FEATURES_DATA"))
 LR = float(os.getenv("LR"))
 NUM_LEAVES = int(os.getenv("NUM_LEAVES"))
 N_ESTIMATORS = int(os.getenv("N_ESTIMATORS"))
