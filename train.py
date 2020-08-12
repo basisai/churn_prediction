@@ -58,7 +58,7 @@ def compute_log_metrics(clf, x_val, y_val):
 
     # Calculate and upload xafai metrics
     analyzer = ModelAnalyzer(clf, 'tree_model', model_type=ModelTypes.TREE).test_features(x_val)
-    analyzer.test_labels(y_val).test_inference(y_pred)
+    analyzer.test_labels(y_val.values).test_inference(y_pred.values)
     analyzer.analyze()
 
 
