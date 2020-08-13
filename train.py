@@ -8,6 +8,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
+from bedrock_client.bedrock.analyzer.model_analyzer import ModelAnalyzer
+from bedrock_client.bedrock.analyzer import ModelTypes
 from bedrock_client.bedrock.api import BedrockApi
 from bedrock_client.bedrock.metrics.service import ModelMonitoringService
 from sklearn import metrics
@@ -53,6 +55,11 @@ def compute_log_metrics(clf, x_val, y_val):
     bedrock.log_metric("Avg precision", avg_prc)
     bedrock.log_chart_data(y_val.astype(int).tolist(),
                            y_prob.flatten().tolist())
+
+    # Calculate and upload xafai metrics
+    analyzer = ModelAnalyzer(clf, 'tree_model', model_type=ModelTypes.TREE).test_features(x_val)
+    analyzer.test_labels(y_val.values).test_inference(y_pred)
+    analyzer.analyze()
 
 
 def main():
