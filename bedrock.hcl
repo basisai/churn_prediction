@@ -33,6 +33,7 @@ train {
                 script = "preprocess.py"
                 // to be passed in as --conf key=value
                 conf {
+                    com.amazonaws.services.s3.enableV4 = "true"
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
@@ -48,7 +49,6 @@ train {
                 }
                 // to be passed in as --key=value
                 settings {
-                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -68,6 +68,7 @@ train {
             {spark-submit {
                 script = "generate_features.py"
                 conf {
+                    com.amazonaws.services.s3.enableV4 = "true"
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
@@ -80,9 +81,6 @@ train {
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
-                }
-                settings {
-                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -145,6 +143,7 @@ batch_score {
             {spark-submit {
                 script = "preprocess.py"
                 conf {
+                    com.amazonaws.services.s3.enableV4 = "true"
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
@@ -157,9 +156,6 @@ batch_score {
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
-                }
-                settings {
-                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -179,6 +175,7 @@ batch_score {
             {spark-submit {
                 script = "generate_features.py"
                 conf {
+                    com.amazonaws.services.s3.enableV4 = "true"
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
@@ -191,9 +188,6 @@ batch_score {
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
-                }
-                settings {
-                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
