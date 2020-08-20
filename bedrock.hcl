@@ -20,7 +20,7 @@ train {
     // We declare a step with a step name. For example, this step is named as "preprocess".
     // A step's name must be unique.
     step preprocess {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
@@ -33,7 +33,7 @@ train {
                 script = "preprocess.py"
                 // to be passed in as --conf key=value
                 conf {
-                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
                     spark.driver.cores = "2"
@@ -44,7 +44,7 @@ train {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
-                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
+                    spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
                 }
                 // to be passed in as --key=value
                 settings {
@@ -58,7 +58,7 @@ train {
     }
 
     step generate_features {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
@@ -67,7 +67,7 @@ train {
             {spark-submit {
                 script = "generate_features.py"
                 conf {
-                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
                     spark.driver.cores = "2"
@@ -78,7 +78,7 @@ train {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
-                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
+                    spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -90,7 +90,7 @@ train {
     }
 
     step train {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
@@ -132,7 +132,7 @@ Similar in style as Train stanza
 */
 batch_score {
     step preprocess {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
@@ -141,7 +141,7 @@ batch_score {
             {spark-submit {
                 script = "preprocess.py"
                 conf {
-                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
                     spark.driver.cores = "2"
@@ -152,7 +152,7 @@ batch_score {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
-                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
+                    spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -163,7 +163,7 @@ batch_score {
     }
 
     step generate_features {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
@@ -172,7 +172,7 @@ batch_score {
             {spark-submit {
                 script = "generate_features.py"
                 conf {
-                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.2"
+                    spark.kubernetes.container.image = "basisai/workload-standard:v0.1.3"
                     spark.kubernetes.pyspark.pythonVersion = "3"
                     spark.driver.memory = "4g"
                     spark.driver.cores = "2"
@@ -183,7 +183,7 @@ batch_score {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
-                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
+                    spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -195,7 +195,7 @@ batch_score {
     }
 
     step batch_score {
-        image = "basisai/workload-standard:v0.1.2"
+        image = "basisai/workload-standard:v0.1.3"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
