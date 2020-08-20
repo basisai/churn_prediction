@@ -42,8 +42,8 @@ train {
                     spark.executor.cores = "2"
                     spark.memory.fraction = "0.5"
                     spark.sql.parquet.compression.codec = "gzip"
-                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                    spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
+                    spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                 }
                 // to be passed in as --key=value
                 settings {
@@ -75,8 +75,8 @@ train {
                     spark.executor.cores = "2"
                     spark.memory.fraction = "0.5"
                     spark.sql.parquet.compression.codec = "gzip"
-                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                    spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
+                    spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                 }
             }}
         ]
@@ -103,9 +103,9 @@ train {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "gs://span-temp-production/"
+        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         LR = "0.05"
@@ -148,8 +148,8 @@ batch_score {
                     spark.executor.cores = "2"
                     spark.memory.fraction = "0.5"
                     spark.sql.parquet.compression.codec = "gzip"
-                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                    spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
+                    spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                 }
             }}
         ]
@@ -178,8 +178,8 @@ batch_score {
                     spark.executor.cores = "2"
                     spark.memory.fraction = "0.5"
                     spark.sql.parquet.compression.codec = "gzip"
-                    spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-                    spark.hadoop.google.cloud.auth.service.account.enable = "true"
+                    spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
+                    spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                 }
             }}
         ]
@@ -206,9 +206,9 @@ batch_score {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "gs://span-temp-production/"
+        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
