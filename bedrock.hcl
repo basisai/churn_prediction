@@ -44,6 +44,7 @@ train {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
+                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
                 }
                 // to be passed in as --key=value
                 settings {
@@ -77,6 +78,7 @@ train {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
+                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
                 }
             }}
         ]
@@ -103,9 +105,9 @@ train {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "s3://span-production-temp-data/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "s3://span-production-temp-data/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "s3://span-production-temp-data/"
+        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         LR = "0.05"
@@ -150,6 +152,7 @@ batch_score {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
+                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
                 }
             }}
         ]
@@ -180,6 +183,7 @@ batch_score {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
+                    spark.hadoop.fs.s3a.server-side-encryption-algorithm = "AES256"
                 }
             }}
         ]
@@ -206,9 +210,9 @@ batch_score {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "s3://span-production-temp-data/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "s3://span-production-temp-data/churn_data/all_calls.gz.parquet"
-        TEMP_DATA_BUCKET = "s3://span-production-temp-data/"
+        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
