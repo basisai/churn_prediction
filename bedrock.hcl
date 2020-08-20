@@ -48,6 +48,7 @@ train {
                 }
                 // to be passed in as --key=value
                 settings {
+                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -79,6 +80,9 @@ train {
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
+                }
+                settings {
+                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
@@ -154,6 +158,9 @@ batch_score {
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
                 }
+                settings {
+                    com.amazonaws.services.s3.enableV4 = "true"
+                }
             }}
         ]
         resources {
@@ -184,6 +191,9 @@ batch_score {
                     spark.hadoop.fs.s3a.impl = "org.apache.hadoop.fs.s3a.S3AFileSystem"
                     spark.hadoop.fs.s3a.endpoint = "s3.ap-southeast-1.amazonaws.com"
                     spark.hadoop.com.amazonaws.services.s3.enableV4 = "true"
+                }
+                settings {
+                    com.amazonaws.services.s3.enableV4 = "true"
                 }
             }}
         ]
