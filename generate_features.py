@@ -18,13 +18,13 @@ def generate_features(spark):
     joined_df = spark.read.parquet(PREPROCESSED_DATA)
     for area_code in AREA_CODES:
         joined_df = joined_df.withColumn(
-            "Area_Code_{}".format(area_code),
+            "Area_Code={}".format(area_code),
             F.when(F.col("Area_Code") == area_code, 1).otherwise(0)
         )
 
     for state in STATES:
         joined_df = joined_df.withColumn(
-            "State_{}".format(state),
+            "State={}".format(state),
             F.when(F.col("State") == state, 1).otherwise(0)
         )
 
