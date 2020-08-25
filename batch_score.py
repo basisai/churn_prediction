@@ -3,7 +3,6 @@ Script to perform batch scoring.
 """
 import os
 import pickle
-import time
 
 import pandas as pd
 

@@ -7,6 +7,7 @@ Comprises the following:
 - [required] step: training steps to be run. Multiple steps are allowed but must have different names
 - [optional] parameters: environment variables used by the script. They can be overwritten when you create a run.
 - [optional] secrets: the names of the secrets necessary to run the script successfully
+
 Step stanza
 Comprises the following:
 - [required] image: the base Docker image that the script will run in
@@ -57,7 +58,10 @@ train {
 
     step generate_features {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+        ]
         script = [
             {spark-submit {
                 script = "generate_features.py"
@@ -127,7 +131,10 @@ Similar in style as Train stanza
 batch_score {
     step preprocess {
         image = "basisai/workload-standard:v0.1.2"
-        install = ["pip3 install --upgrade pip && pip3 install -r requirements.txt"]
+        install = [
+            "pip3 install --upgrade pip",
+            "pip3 install -r requirements.txt",
+        ]
         script = [
             {spark-submit {
                 script = "preprocess.py"
