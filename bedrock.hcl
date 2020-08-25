@@ -103,8 +103,8 @@ train {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        RAW_SUBSCRIBERS_DATA = "s3a://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://bedrock-sample/churn_data/all_calls.gz.parquet"
         TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
@@ -206,8 +206,8 @@ batch_score {
     }
 
     parameters {
-        RAW_SUBSCRIBERS_DATA = "s3a://span-production-temp-data/churn_data/subscribers.gz.parquet"
-        RAW_CALLS_DATA = "s3a://span-production-temp-data/churn_data/all_calls.gz.parquet"
+        RAW_SUBSCRIBERS_DATA = "s3a://bedrock-sample/churn_data/subscribers.gz.parquet"
+        RAW_CALLS_DATA = "s3a://bedrock-sample/churn_data/all_calls.gz.parquet"
         TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
