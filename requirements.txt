@@ -1,5 +1,7 @@
 # REMOVE PRIOR TO MERGE
+aif360==0.3.0
 --extra-index-url https://testpypi.python.org/pypi
+
 bdrk[model-monitoring]==0.4.0
 numpy==1.18.4
 pandas==1.0.3
