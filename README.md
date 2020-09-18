@@ -11,12 +11,7 @@ See [notebook](./doc/churn_prediction.ipynb)
 ![flowchart](./doc/flow.png)
 
 ### Run on Bedrock
-Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run. When you create a run, overwrite these default values.
-
-Name | Default value | Description
---- | --- | ---
-`TEMP_DATA_BUCKET` | "gs://span-temp-production/" | Bucket to store intermediate data between steps. If the environment is `test-production`, you may use `bdrk-test-temp` which is the pre-created bucket that has write access. You may also use other buckets with write access.
-`BIGQUERY_PROJECT` | "span-production" | Only for batch scoring pipeline. Bigquery project to write results to.
+Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run.
 
 ### Test your server
 ```
