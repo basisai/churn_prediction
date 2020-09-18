@@ -10,13 +10,5 @@ See [notebook](./doc/churn_prediction.ipynb)
 ### Data processing and model training flowchart
 ![flowchart](./doc/flow.png)
 
-### Test your server
-```
-pip3 install -r requirements-serve.txt
-
-# generate the grpc stubs
-python3 -m grpc_tools.protoc -I ./protos --python_out=. --grpc_python_out=. serve.proto
-
-# run the client
-python3 client.py -e <Your endpoint>
-```
+### Run on Bedrock
+Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run.
