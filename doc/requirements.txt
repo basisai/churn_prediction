@@ -1,0 +1,4 @@
+tensorflow
+bdrk[analyzer,model-monitoring]==0.7.0b1
+seaborn
+lightgbm
