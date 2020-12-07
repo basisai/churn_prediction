@@ -105,3 +105,10 @@ venv.bak/
 
 # idea
 .idea/
+
+# vscode
+.vscode/
+
+# test output
+doc/data/test.csv
+doc/data/lgb_model.pkl
