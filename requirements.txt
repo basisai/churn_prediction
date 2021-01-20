@@ -1,6 +1,6 @@
 bdrk[model-monitoring,analyzer]==0.6.0
 numpy==1.18.4
-pandas==1.0.3
+pandas==1.2.0
 lightgbm==2.3.1
 scikit-learn==0.22.1
 pyspark==2.4.4
