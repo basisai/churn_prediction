@@ -1,5 +1,5 @@
-bdrk[model-monitoring,analyzer]==0.6.0
-numpy==1.18.4
-lightgbm==2.3.1
+bdrk[model-monitoring,analyzer]==0.7.1
+numpy==1.20.1
+lightgbm==3.1.1
 flask==1.1.2
 gunicorn==20.0.4
