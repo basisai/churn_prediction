@@ -1,4 +1,4 @@
-bdrk[model-monitoring,analyzer]==0.7.1
+bdrk[model-monitoring,analyzer]>=0.7.2
 numpy==1.20.1
 pandas==1.2.2
 lightgbm==2.3.1
