@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/basisai/churn_prediction.svg?branch=master)](https://travis-ci.com/basisai/churn_prediction)
 [![Python version](https://img.shields.io/badge/python-3.7-blue.svg)](https://shields.io/)
 
-Preprocess raw data, train and serve ML model for customer churn data.
+This example is an end-to-end Bedrock tutorial on AWS. It demonstrates how to use Bedrock to preprocess data, train a model and create a HTTP endpoint for serving. This example complements [Bedrock documentation](https://docs.basis-ai.com/guides/quickstart).
 
 ### Data exploration and Model prototyping
 See [notebook](./doc/churn_prediction.ipynb)
@@ -10,10 +10,19 @@ See [notebook](./doc/churn_prediction.ipynb)
 ### Data processing and model training flowchart
 ![flowchart](./doc/flow.png)
 
-### Run on Bedrock
-Parameters will passed to your scripts as environment variables. They can be overwritten when you create a pipeline run.
+## Goals
+At the end of the tutorial, the user will be able to
+- set up a Bedrock training pipeline
+- monitor the training
+- deploy a model endpoint in HTTPS
+- query the endpoint
+- monitor the endpoint API metrics
 
-### Test your server
+## Run on Bedrock
+Just follow the Bedrock [quickstart guide](https://docs.basis-ai.com/guides/quickstart). We have already prepared the data on S3 so that you do not have to upload any.
+
+## Test your endpoint
+After deploying your model as an endpoint, you can test it with the query below
 ```
 curl -X POST \
   <MODEL_ENDPOINT_URL> \
