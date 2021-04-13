@@ -5,7 +5,7 @@ train {
         image = "basisai/workload-standard:v0.2.2"
         install = [
             "pip3 install --upgrade pip",
-            "pip3 install -r requirements-aws.txt",
+            "pip3 install -r requirements.txt",
         ]
         script = [
             {spark-submit {
@@ -35,7 +35,7 @@ train {
         image = "basisai/workload-standard:v0.2.2"
         install = [
             "pip3 install --upgrade pip",
-            "pip3 install -r requirements-aws.txt",
+            "pip3 install -r requirements.txt",
         ]
         script = [
             {spark-submit {
@@ -66,7 +66,7 @@ train {
         image = "basisai/workload-standard:v0.2.2"
         install = [
             "pip3 install --upgrade pip",
-            "pip3 install -r requirements-aws.txt",
+            "pip3 install -r requirements.txt",
         ]
         script = [{sh = ["python3 train.py"]}]
         resources {
