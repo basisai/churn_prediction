@@ -7,9 +7,6 @@ This example is an end-to-end Bedrock tutorial on AWS. It demonstrates how to us
 ### Data exploration and Model prototyping
 See [notebook](./doc/churn_prediction.ipynb)
 
-### Data processing and model training flowchart
-![flowchart](./doc/flow.png)
-
 ## Goals
 At the end of the tutorial, the user will be able to
 - set up a Bedrock training pipeline
