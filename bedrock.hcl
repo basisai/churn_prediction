@@ -189,7 +189,7 @@ batch_score {
         TEMP_DATA_BUCKET = "s3a://span-production-temp-data/"
         PREPROCESSED_DATA = "churn_data/preprocessed"
         FEATURES_DATA = "churn_data/features.csv"
-        DEST_SUBSCRIBER_SCORE_DATA = "subscriber_score.csv"
+        SUBSCRIBER_SCORE_DATA = "churn_data/subscriber_score.csv"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
     }
 }

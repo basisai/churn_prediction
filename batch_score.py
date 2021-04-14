@@ -9,11 +9,11 @@ import pandas as pd
 
 from utils.constants import FEATURE_COLS
 
+OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
 FEATURES_DATA = os.path.join(
     os.getenv("TEMP_DATA_BUCKET"), os.getenv("FEATURES_DATA"))
-OUTPUT_MODEL_NAME = os.getenv("OUTPUT_MODEL_NAME")
-DEST_SUBSCRIBER_SCORE_DATA = os.path.join(
-    os.getenv("TEMP_DATA_BUCKET"), os.getenv("DEST_SUBSCRIBER_SCORE_DATA"))
+SUBSCRIBER_SCORE_DATA = os.path.join(
+    os.getenv("TEMP_DATA_BUCKET"), os.getenv("SUBSCRIBER_SCORE_DATA"))
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
 
     print("\tSaving scores")
     subscriber_pd_df[["User_id", "Prob"]].to_csv(
-        DEST_SUBSCRIBER_SCORE_DATA,
+        SUBSCRIBER_SCORE_DATA,
         index=False,
     )
 
