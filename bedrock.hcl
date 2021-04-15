@@ -1,37 +1,15 @@
-// Refer to https://docs.basis-ai.com/getting-started/writing-files/bedrock.hcl for more details.
 version = "1.0"
 
-/*
-Train stanza
-Comprises the following:
-- [required] step: training steps to be run. Multiple steps are allowed but must have different names
-- [optional] parameters: environment variables used by the script. They can be overwritten when you create a run.
-- [optional] secrets: the names of the secrets necessary to run the script successfully
-
-Step stanza
-Comprises the following:
-- [required] image: the base Docker image that the script will run in
-- [optional] install: the command to install any other packages not covered in the image
-- [required] script: the command that calls the script
-- [optional] resources: the computing resources to be allocated to this run step
-- [optional] depends_on: a list of names of steps that this run step depends on
-*/
 train {
-    // We declare a step with a step name. For example, this step is named as "preprocess".
-    // A step's name must be unique.
     step preprocess {
         image = "basisai/workload-standard:v0.2.2"
         install = [
             "pip3 install --upgrade pip",
             "pip3 install -r requirements.txt",
         ]
-        // As we are using Spark, "script" is written in the manner shown below.
-        // If Spark is not required, it is just simply:
-        // script = [{sh = ["python3 train.py"]}]
         script = [
             {spark-submit {
                 script = "preprocess.py"
-                // to be passed in as --conf key=value
                 conf {
                     spark.kubernetes.container.image = "basisai/workload-standard:v0.2.2"
                     spark.kubernetes.pyspark.pythonVersion = "3"
@@ -44,9 +22,6 @@ train {
                     spark.sql.parquet.compression.codec = "gzip"
                     spark.hadoop.fs.AbstractFileSystem.gs.impl = "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
                     spark.hadoop.google.cloud.auth.service.account.enable = "true"
-                }
-                // to be passed in as --key=value
-                settings {
                 }
             }}
         ]
@@ -97,7 +72,6 @@ train {
         resources {
             cpu = "0.5"
             memory = "1G"
-            // gpu = "1"  // uncomment this in order to use GPU. Only integer values are allowed.
         }
         depends_on = ["generate_features"]
     }
@@ -124,10 +98,22 @@ train {
     */
 }
 
-/*
-Batch score stanza
-Similar in style as Train stanza
-*/
+serve {
+    image = "python:3.7"
+    // The third line in "install" is to generate serve_pb2 and serve_pb2_grpc.
+    // It requires protos/serve.proto.
+    install = [
+        "pip3 install --upgrade pip",
+        "pip3 install -r requirements-serve.txt",
+        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto",
+    ]
+    script = [{sh = ["python3 serve_grpc.py"]}]
+
+    parameters {
+        WORKERS = "2"
+    }
+}
+
 batch_score {
     step preprocess {
         image = "basisai/workload-standard:v0.2.2"
@@ -213,31 +199,7 @@ batch_score {
         FEATURES_DATA = "churn_data/features.csv"
         BIGQUERY_PROJECT = "span-production"
         BIGQUERY_DATASET = "churn"
-        DEST_SUBSCRIBER_SCORE_TABLE = "subscriber_score"
+        SUBSCRIBER_SCORE_TABLE = "subscriber_score"
         OUTPUT_MODEL_NAME = "lgb_model.pkl"
-    }
-}
-
-/*
-Serve stanza for gRPC serving
-Please refer to master branch for HTTP serving.
-Only comprises the following:
-- [required] image: the base Docker image that the script will run in
-- [optional] install: the command to install any other packages not covered in the image
-- [required] script: the command that calls the script
-*/
-serve {
-    image = "python:3.7"
-    // The second line in "install" is to generate serve_pb2 and serve_pb2_grpc.
-    // It requires protos/serve.proto.
-    install = [
-        "pip3 install --upgrade pip",
-        "pip3 install -r requirements-serve.txt",
-        "python3 -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/serve.proto",
-    ]
-    script = [{sh = ["python3 serve_grpc.py"]}]
-
-    parameters {
-        WORKERS = "2"
     }
 }
