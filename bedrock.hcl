@@ -23,10 +23,6 @@ train {
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
             "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
-
-            "spark.hadoop.fs.s3a.aws.credentials.provider"              = "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-            "spark.kubernetes.authenticate.driver.serviceAccountName"   = "span"
-            "spark.kubernetes.authenticate.executor.serviceAccountName" = "span"
           }
         }
       }
@@ -60,10 +56,6 @@ train {
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
             "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
 
-
-            "spark.hadoop.fs.s3a.aws.credentials.provider"              = "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-            "spark.kubernetes.authenticate.driver.serviceAccountName"   = "span"
-            "spark.kubernetes.authenticate.executor.serviceAccountName" = "span"
           }
         }
       }
@@ -145,10 +137,6 @@ batch_score {
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
             "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
-
-            "spark.hadoop.fs.s3a.aws.credentials.provider"              = "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-            "spark.kubernetes.authenticate.driver.serviceAccountName"   = "span"
-            "spark.kubernetes.authenticate.executor.serviceAccountName" = "span"
           }
       } }
     ]
@@ -180,11 +168,6 @@ batch_score {
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
             "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
-
-
-            "spark.hadoop.fs.s3a.aws.credentials.provider"              = "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-            "spark.kubernetes.authenticate.driver.serviceAccountName"   = "span"
-            "spark.kubernetes.authenticate.executor.serviceAccountName" = "span"
           }
       } }
     ]
