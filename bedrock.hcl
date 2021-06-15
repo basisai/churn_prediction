@@ -22,7 +22,7 @@ train {
             "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com
+            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
           }
         }
       }
@@ -55,6 +55,7 @@ train {
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
             "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
+
           }
         }
       }
@@ -135,7 +136,7 @@ batch_score {
             "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
             "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com
+            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
           }
       } }
     ]
