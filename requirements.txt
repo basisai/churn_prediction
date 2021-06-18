@@ -3,7 +3,7 @@ numpy==1.20.1
 pandas==1.2.2
 lightgbm==3.1.1
 scikit-learn==0.24.1
-pyspark==2.4.4
+pyspark==3.1.2
 fastparquet==0.5.0
 gcsfs==0.6.2
 google-cloud==0.34.0
