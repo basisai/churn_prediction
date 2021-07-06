@@ -5,7 +5,7 @@ import json
 import pickle
 
 import numpy as np
-from bedrock_client.bedrock.metrics.service import ModelMonitoringService
+from boxkite.monitoring.service import ModelMonitoringService
 from flask import Flask, Response, current_app, request
 
 from utils.constants import AREA_CODES, STATES, SUBSCRIBER_FEATURES
