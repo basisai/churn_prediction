@@ -28,7 +28,10 @@ train {
 
   step "generate_features" {
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = []
+    install = [
+      "pip3 install --upgrade pip",
+      "pip3 install -r requirements.txt",
+    ]
     script = [
       {
         spark-submit = {
@@ -120,7 +123,10 @@ batch_score {
 
   step "generate_features" {
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = []
+    install = [
+      "pip3 install --upgrade pip",
+      "pip3 install -r requirements.txt",
+    ]
     script = [
       {
         spark-submit = {
