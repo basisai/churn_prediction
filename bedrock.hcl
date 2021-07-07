@@ -2,6 +2,7 @@ version = "1.0"
 
 train {
   step "preprocess" {
+    # Same as spark.kubernetes.container.image
     image = "quay.io/basisai/workload-standard:v0.3.1"
     install = [
       "pip3 install --upgrade pip",
@@ -12,23 +13,18 @@ train {
         spark-submit = {
           script = "preprocess.py"
           conf = {
-            "spark.kubernetes.container.image"       = "quay.io/basisai/workload-standard:v0.3.1"
-            "spark.kubernetes.pyspark.pythonVersion" = "3"
-            "spark.driver.memory"                    = "4g"
-            "spark.driver.cores"                     = "2"
             "spark.executor.instances"               = "2"
             "spark.executor.memory"                  = "4g"
             "spark.executor.cores"                   = "2"
-            "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
-            "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
           }
         }
       }
     ]
     resources {
+      # Same as spark.driver.cores
       cpu    = "0.5"
+      # Same as spark.driver.memory
       memory = "1G"
     }
   }
@@ -44,18 +40,10 @@ train {
         spark-submit = {
           script = "generate_features.py"
           conf = {
-            "spark.kubernetes.container.image"       = "quay.io/basisai/workload-standard:v0.3.1"
-            "spark.kubernetes.pyspark.pythonVersion" = "3"
-            "spark.driver.memory"                    = "4g"
-            "spark.driver.cores"                     = "2"
             "spark.executor.instances"               = "2"
             "spark.executor.memory"                  = "4g"
             "spark.executor.cores"                   = "2"
-            "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
-            "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
-
           }
         }
       }
@@ -126,17 +114,10 @@ batch_score {
         spark-submit = {
           script = "preprocess.py"
           conf = {
-            "spark.kubernetes.container.image"       = "quay.io/basisai/workload-standard:v0.3.1"
-            "spark.kubernetes.pyspark.pythonVersion" = "3"
-            "spark.driver.memory"                    = "4g"
-            "spark.driver.cores"                     = "2"
             "spark.executor.instances"               = "2"
             "spark.executor.memory"                  = "4g"
             "spark.executor.cores"                   = "2"
-            "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
-            "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
           }
       } }
     ]
@@ -157,17 +138,10 @@ batch_score {
         spark-submit = {
           script = "generate_features.py"
           conf = {
-            "spark.kubernetes.container.image"       = "quay.io/basisai/workload-standard:v0.3.1"
-            "spark.kubernetes.pyspark.pythonVersion" = "3"
-            "spark.driver.memory"                    = "4g"
-            "spark.driver.cores"                     = "2"
             "spark.executor.instances"               = "2"
             "spark.executor.memory"                  = "4g"
             "spark.executor.cores"                   = "2"
-            "spark.memory.fraction"                  = "0.5"
             "spark.sql.parquet.compression.codec"    = "gzip"
-            "spark.hadoop.fs.s3a.impl"               = "org.apache.hadoop.fs.s3a.S3AFileSystem"
-            "spark.hadoop.fs.s3a.endpoint"           = "s3.ap-southeast-1.amazonaws.com"
           }
       } }
     ]
