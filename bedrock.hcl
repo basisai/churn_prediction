@@ -4,10 +4,7 @@ train {
   step "preprocess" {
     # Same as spark.kubernetes.container.image
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = [
-      "pip3 install --upgrade pip",
-      "pip3 install -r requirements.txt",
-    ]
+    install = []
     script = [
       {
         spark-submit = {
@@ -31,10 +28,7 @@ train {
 
   step "generate_features" {
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = [
-      "pip3 install --upgrade pip",
-      "pip3 install -r requirements.txt",
-    ]
+    install = []
     script = [
       {
         spark-submit = {
@@ -56,7 +50,7 @@ train {
   }
 
   step "train" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "python:3.7"
     install = [
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
@@ -105,10 +99,7 @@ serve {
 batch_score {
   step "preprocess" {
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = [
-      "pip3 install --upgrade pip",
-      "pip3 install -r requirements.txt",
-    ]
+    install = []
     script = [
       {
         spark-submit = {
@@ -129,10 +120,7 @@ batch_score {
 
   step "generate_features" {
     image = "quay.io/basisai/workload-standard:v0.3.1"
-    install = [
-      "pip3 install --upgrade pip",
-      "pip3 install -r requirements.txt",
-    ]
+    install = []
     script = [
       {
         spark-submit = {
@@ -153,7 +141,7 @@ batch_score {
   }
 
   step "batch_score" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "python:3.7"
     install = [
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
