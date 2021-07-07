@@ -161,14 +161,12 @@ batch_score {
   }
 
   parameters {
-    RAW_SUBSCRIBERS_DATA   = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
-    RAW_CALLS_DATA         = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
-    TEMP_DATA_BUCKET       = "gs://span-temp-production/"
-    PREPROCESSED_DATA      = "churn_data/preprocessed"
-    FEATURES_DATA          = "churn_data/features.csv"
-    BIGQUERY_PROJECT       = "span-production"
-    BIGQUERY_DATASET       = "churn"
-    SUBSCRIBER_SCORE_TABLE = "subscriber_score"
-    OUTPUT_MODEL_NAME      = "lgb_model.pkl"
+    RAW_SUBSCRIBERS_DATA  = "gs://bedrock-sample/churn_data/subscribers.gz.parquet"
+    RAW_CALLS_DATA        = "gs://bedrock-sample/churn_data/all_calls.gz.parquet"
+    TEMP_DATA_BUCKET      = "gs://span-temp-production/"
+    PREPROCESSED_DATA     = "churn_data/preprocessed"
+    FEATURES_DATA         = "churn_data/features.csv"
+    SUBSCRIBER_SCORE_DATA = "churn_data/subscriber_score.csv"
+    OUTPUT_MODEL_NAME     = "lgb_model.pkl"
   }
 }
