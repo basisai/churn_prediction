@@ -1,5 +1,5 @@
-numpy==1.20.1
-lightgbm==3.1.1
+numpy==1.21.0
+lightgbm==3.2.1
 aiohttp==3.7.4
 protobuf==3.10.0
 grpcio==1.24.1
