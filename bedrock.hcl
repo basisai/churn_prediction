@@ -109,7 +109,7 @@ serve {
 
   parameters {
       WORKERS                  = "2"
-      prometheus_multiproc_dir = "/tmp"
+      PROMETHEUS_MULTIPROC_DIR = "/tmp"
   }
 }
 

@@ -8,10 +8,9 @@ import pickle
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
-from bedrock_client.bedrock.analyzer.model_analyzer import ModelAnalyzer
-from bedrock_client.bedrock.analyzer import ModelTypes
+from bdrk.model_analyzer import ModelAnalyzer, ModelTypes
 from bedrock_client.bedrock.api import BedrockApi
-from bedrock_client.bedrock.metrics.service import ModelMonitoringService
+from boxkite.monitoring.service import ModelMonitoringService
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 

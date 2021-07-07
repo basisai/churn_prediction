@@ -1,4 +1,4 @@
 tensorflow
-bdrk[analyzer,model-monitoring]==0.7.0b1
+bdrk[analyzer,model-monitoring]==0.9.0
 seaborn
 lightgbm
