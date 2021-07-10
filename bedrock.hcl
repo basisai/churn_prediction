@@ -109,7 +109,8 @@ batch_score {
             "spark.executor.cores"                   = "2"
             "spark.sql.parquet.compression.codec"    = "gzip"
           }
-      } }
+        }
+      }
     ]
     resources {
       cpu    = "0.5"
@@ -133,7 +134,8 @@ batch_score {
             "spark.executor.cores"                   = "2"
             "spark.sql.parquet.compression.codec"    = "gzip"
           }
-      } }
+        }
+      }
     ]
     resources {
       cpu    = "0.5"
