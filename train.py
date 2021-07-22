@@ -1,15 +1,14 @@
 """
 Script to train model.
 """
-import logging
 import os
 import pickle
 
+import bdrk
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from bdrk.model_analyzer import ModelAnalyzer, ModelTypes
-from bedrock_client.bedrock.api import BedrockApi
 from boxkite.monitoring.service import ModelMonitoringService
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
@@ -45,15 +44,19 @@ def compute_log_metrics(clf, x_val, y_val):
     print(f"Average precision = {avg_prc:.6f}")
 
     # Log metrics
-    bedrock = BedrockApi(logging.getLogger(__name__))
-    bedrock.log_metric("Accuracy", acc)
-    bedrock.log_metric("Precision", precision)
-    bedrock.log_metric("Recall", recall)
-    bedrock.log_metric("F1 score", f1_score)
-    bedrock.log_metric("ROC AUC", roc_auc)
-    bedrock.log_metric("Avg precision", avg_prc)
-    bedrock.log_chart_data(y_val.astype(int).tolist(),
-                           y_prob.flatten().tolist())
+    bdrk.log_metrics(
+        {
+            "Accuracy": acc,
+            "Precision": precision,
+            "Recall": recall,
+            "F1 score": f1_score,
+            "ROC AUC": roc_auc,
+            "Avg precision": avg_prc,
+        }
+    )
+    bdrk.log_binary_classifier_metrics(
+        y_val.astype(int).tolist(), y_prob.flatten().tolist()
+    )
 
     # Calculate and upload xafai metrics
     analyzer = ModelAnalyzer(clf, "tree_model", model_type=ModelTypes.TREE).test_features(x_val)
@@ -97,4 +100,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    bdrk.init()
+    with bdrk.start_run():
+        main()
