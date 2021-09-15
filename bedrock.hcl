@@ -24,6 +24,9 @@ train {
       # Same as spark.driver.memory
       memory = "1G"
     }
+    retry {
+      limit = "2"
+    }
   }
 
   step "generate_features" {
@@ -49,6 +52,9 @@ train {
       cpu    = "0.5"
       memory = "1G"
     }
+    retry {
+      limit = "0"
+    }
     depends_on = ["preprocess"]
   }
 
@@ -62,6 +68,9 @@ train {
     resources {
       cpu    = "0.5"
       memory = "1G"
+    }
+    retry {
+      limit = "3"
     }
     depends_on = ["generate_features"]
   }
@@ -113,12 +122,15 @@ batch_score {
             "spark.executor.cores"                   = "2"
             "spark.sql.parquet.compression.codec"    = "gzip"
           }
-        } 
+        }
       }
     ]
     resources {
       cpu    = "0.5"
       memory = "1G"
+    }
+    retry {
+      limit = "2"
     }
   }
 
@@ -145,6 +157,9 @@ batch_score {
       cpu    = "0.5"
       memory = "1G"
     }
+    retry {
+      limit = "0"
+    }
     depends_on = ["preprocess"]
   }
 
@@ -158,6 +173,9 @@ batch_score {
     resources {
       cpu    = "0.5"
       memory = "1G"
+    }
+    retry {
+      limit = "3"
     }
     depends_on = ["generate_features"]
   }
