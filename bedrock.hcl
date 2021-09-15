@@ -53,7 +53,7 @@ train {
       memory = "1G"
     }
     retry {
-      limit = "0"
+      limit = "2"
     }
     depends_on = ["preprocess"]
   }
@@ -70,7 +70,7 @@ train {
       memory = "1G"
     }
     retry {
-      limit = "3"
+      limit = "2"
     }
     depends_on = ["generate_features"]
   }
@@ -158,7 +158,7 @@ batch_score {
       memory = "1G"
     }
     retry {
-      limit = "0"
+      limit = "2"
     }
     depends_on = ["preprocess"]
   }
@@ -175,7 +175,7 @@ batch_score {
       memory = "1G"
     }
     retry {
-      limit = "3"
+      limit = "2"
     }
     depends_on = ["generate_features"]
   }
