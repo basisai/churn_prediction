@@ -24,6 +24,9 @@ train {
       # Same as spark.driver.memory
       memory = "1G"
     }
+    retry {
+      limit = "2"
+    }
   }
 
   step "generate_features" {
@@ -49,10 +52,13 @@ train {
       cpu    = "0.5"
       memory = "1G"
     }
+    retry {
+      limit = "2"
+    }
     depends_on = ["preprocess"]
   }
 
-  step train {
+  step "train" {
     image = "python:3.7"
     install = [
       "pip3 install --upgrade pip",
@@ -62,6 +68,9 @@ train {
     resources {
       cpu = "0.5"
       memory = "1G"
+    }
+    retry {
+      limit = "2"
     }
     depends_on = ["generate_features"]
   }
@@ -120,6 +129,9 @@ batch_score {
       cpu    = "0.5"
       memory = "1G"
     }
+    retry {
+      limit = "2"
+    }
   }
 
   step "generate_features" {
@@ -145,6 +157,9 @@ batch_score {
       cpu    = "0.5"
       memory = "1G"
     }
+    retry {
+      limit = "2"
+    }
     depends_on = ["preprocess"]
   }
 
@@ -158,6 +173,9 @@ batch_score {
     resources {
       cpu    = "0.5"
       memory = "1G"
+    }
+    retry {
+      limit = "2"
     }
     depends_on = ["generate_features"]
   }
