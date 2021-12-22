@@ -3,7 +3,7 @@ version = "1.0"
 train {
   step "preprocess" {
     # Same as spark.kubernetes.container.image
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:pr-157"
     install = []
     script = [
       {
@@ -30,7 +30,7 @@ train {
   }
 
   step "generate_features" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:pr-157"
     install = [
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
