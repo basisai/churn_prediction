@@ -78,7 +78,7 @@ train {
   parameters {
     RAW_SUBSCRIBERS_DATA = "s3a://bedrock-sample/churn_data/subscribers.gz.parquet"
     RAW_CALLS_DATA       = "s3a://bedrock-sample/churn_data/all_calls.gz.parquet"
-    TEMP_DATA_BUCKET     = "s3a://bdrk-sandbox-aws-data/"
+    TEMP_DATA_BUCKET     = "s3a://span-production-temp-data/"
     PREPROCESSED_DATA    = "churn_data/preprocessed"
     FEATURES_DATA        = "churn_data/features.csv"
     LR                   = "0.05"
@@ -183,7 +183,7 @@ batch_score {
   parameters {
     RAW_SUBSCRIBERS_DATA  = "s3a://bedrock-sample/churn_data/subscribers.gz.parquet"
     RAW_CALLS_DATA        = "s3a://bedrock-sample/churn_data/all_calls.gz.parquet"
-    TEMP_DATA_BUCKET      = "s3a://bdrk-sandbox-aws-data/"
+    TEMP_DATA_BUCKET      = "s3a://span-production-temp-data/"
     PREPROCESSED_DATA     = "churn_data/preprocessed"
     FEATURES_DATA         = "churn_data/features.csv"
     SUBSCRIBER_SCORE_DATA = "churn_data/subscriber_score.csv"
