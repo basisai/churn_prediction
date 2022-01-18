@@ -6,5 +6,5 @@ pandas-gbq==0.15.0
 lightgbm==3.2.1
 scikit-learn==0.24.2
 fastparquet==0.5.0
-gcsfs==0.6.2
+gcsfs==2021.6.1
 google-cloud==0.34.0
