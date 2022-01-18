@@ -3,7 +3,7 @@ version = "1.0"
 train {
   step "preprocess" {
     # Same as spark.kubernetes.container.image
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:v0.3.4"
     install = []
     script = [
       {
@@ -30,7 +30,7 @@ train {
   }
 
   step "generate_features" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:v0.3.4"
     install = [
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
@@ -64,9 +64,9 @@ train {
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
     ]
-    script = [{sh = ["python3 train.py"]}]
+    script = [{ sh = ["python3 train.py"] }]
     resources {
-      cpu = "0.5"
+      cpu    = "0.5"
       memory = "1G"
     }
     retry {
@@ -103,14 +103,14 @@ serve {
   ]
 
   parameters {
-      WORKERS                  = "2"
-      PROMETHEUS_MULTIPROC_DIR = "/tmp"
+    WORKERS                  = "2"
+    PROMETHEUS_MULTIPROC_DIR = "/tmp"
   }
 }
 
 batch_score {
   step "preprocess" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:v0.3.4"
     install = []
     script = [
       {
@@ -135,7 +135,7 @@ batch_score {
   }
 
   step "generate_features" {
-    image = "quay.io/basisai/workload-standard:v0.3.1"
+    image = "quay.io/basisai/workload-standard:v0.3.4"
     install = [
       "pip3 install --upgrade pip",
       "pip3 install -r requirements.txt",
