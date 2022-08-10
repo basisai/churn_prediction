@@ -3,4 +3,4 @@ safety==1.9.0
 # ie. quay.io/basisai/workload-standard:v0.3.3. It's not recommended to install a different
 # version in bedrock.hcl because it must be kept in sync with spark's binary release.
 # https://spark.apache.org/downloads.html
-pyspark==3.2.0
+pyspark==3.2.2
